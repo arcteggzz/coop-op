@@ -1,0 +1,15 @@
+server/node_modules/
+server/dist/
+server/public/pdfs/*.pdf
+server/public/
+
+*.log
+
+.claude
+.vscode
+
+client/dist/
+client/node_modules/
+
+# env files (can opt-in for committing if needed)
+.env*
