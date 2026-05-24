@@ -150,6 +150,39 @@ export async function countMembersForCooperative(cooperativeId: string): Promise
   return (rows[0] as RowDataPacket & { total: number }).total;
 }
 
+// ─── Auth helpers ─────────────────────────────────────────────────────────────
+
+export interface MemberCooperativeLoginRow extends RowDataPacket {
+  CooperativeId: string;
+  CooperativeName: string;
+  IsDefault: number;
+}
+
+export async function findMemberCooperativesForLogin(
+  memberId: string,
+): Promise<MemberCooperativeLoginRow[]> {
+  logger.info({ memberId }, 'Repository: findMemberCooperativesForLogin');
+  const [rows] = await pool.execute<MemberCooperativeLoginRow[]>(
+    `SELECT muc.CooperativeId, c.Name AS CooperativeName, muc.IsDefault
+     FROM MemberUsersCooperatives muc
+     JOIN Cooperatives c ON c.Id = muc.CooperativeId
+     WHERE muc.MemberId = ? AND muc.DateDeleted IS NULL AND c.DateDeleted IS NULL`,
+    [memberId],
+  );
+  return rows;
+}
+
+export async function updateMemberPassword(
+  memberId: string,
+  hashedPassword: string,
+): Promise<void> {
+  logger.info({ memberId }, 'Repository: updateMemberPassword');
+  await pool.execute(
+    'UPDATE MemberUsers SET Password = ?, DefaultPasswordChanged = 1, DateUpdated = NOW(6) WHERE Id = ?',
+    [hashedPassword, memberId],
+  );
+}
+
 // ─── Status updates ───────────────────────────────────────────────────────────
 
 export async function softDeleteMemberCooperativeLink(

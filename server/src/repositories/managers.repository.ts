@@ -234,6 +234,40 @@ export async function replaceManagerPermissions(
   await insertManagerPermissions(managerId, cooperativeId, permissionKeys);
 }
 
+// ─── Auth helpers ─────────────────────────────────────────────────────────────
+
+export interface ManagerCooperativeLoginRow extends RowDataPacket {
+  CooperativeId: string;
+  CooperativeName: string;
+  Role: string;
+  IsDefault: number;
+}
+
+export async function findManagerCooperativesForLogin(
+  managerId: string,
+): Promise<ManagerCooperativeLoginRow[]> {
+  logger.info({ managerId }, "Repository: findManagerCooperativesForLogin");
+  const [rows] = await pool.execute<ManagerCooperativeLoginRow[]>(
+    `SELECT muc.CooperativeId, c.Name AS CooperativeName, muc.Role, muc.IsDefault
+     FROM ManagementUsersCooperatives muc
+     JOIN Cooperatives c ON c.Id = muc.CooperativeId
+     WHERE muc.ManagerId = ? AND muc.DateDeleted IS NULL AND c.DateDeleted IS NULL`,
+    [managerId],
+  );
+  return rows;
+}
+
+export async function updateManagerPassword(
+  managerId: string,
+  hashedPassword: string,
+): Promise<void> {
+  logger.info({ managerId }, "Repository: updateManagerPassword");
+  await pool.execute(
+    "UPDATE ManagementUsers SET Password = ?, DefaultPasswordChanged = 1, DateUpdated = NOW(6) WHERE Id = ?",
+    [hashedPassword, managerId],
+  );
+}
+
 // ─── Status updates ───────────────────────────────────────────────────────────
 
 export async function softDeleteManagerCooperativeLink(

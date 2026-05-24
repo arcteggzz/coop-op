@@ -1,20 +1,24 @@
 export const ADMIN_PERMISSION_KEYS = [
-  'CoopAdminRead',
-  'CoopAdminWrite',
-  'CoopCooperativesRead',
-  'CoopCooperativesWrite',
-  'CoopManagersRead',
-  'CoopManagersWrite',
-  'CoopMembersRead',
-  'CoopMembersWrite',
-  'CoopLoansRead',
-  'CoopLoansWrite',
-  'CoopDuesRead',
-  'CoopDuesWrite',
-  'CoopAjoManagementRead',
-  'CoopAjoManagementWrite',
+  "CoopAdminRead",
+  "CoopAdminWrite",
+  "CoopCooperativesRead",
+  "CoopCooperativesWrite",
+  "CoopManagersRead",
+  "CoopManagersWrite",
+  "CoopMembersRead",
+  "CoopMembersWrite",
+  "CoopLoansRead",
+  "CoopLoansWrite",
+  "CoopDuesRead",
+  "CoopDuesWrite",
+  "CoopLeviesRead",
+  "CoopLeviesWrite",
+  "CoopSavingsRead",
+  "CoopSavingsWrite",
+  "CoopAjoManagementRead",
+  "CoopAjoManagementWrite",
 ] as const;
 
 export type AdminPermissionKey = (typeof ADMIN_PERMISSION_KEYS)[number];
 
-export type AdminRole = 'RootAdmin' | 'SuperAdmin' | 'Admin';
+export type AdminRole = "RootAdmin" | "SuperAdmin" | "Admin";

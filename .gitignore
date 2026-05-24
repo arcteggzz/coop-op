@@ -11,5 +11,7 @@ server/public/
 client/dist/
 client/node_modules/
 
+sample_client/
+
 # env files (can opt-in for committing if needed)
 .env*

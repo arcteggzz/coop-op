@@ -19,6 +19,10 @@ import coopAdminManagementRoutes from "./routes/coopAdminManagement.routes";
 import coopCooperativesRoutes from "./routes/coopCooperatives.routes";
 import coopManagersRoutes from "./routes/coopManagers.routes";
 import coopMembersRoutes from "./routes/coopMembers.routes";
+import managementAuthRoutes from "./routes/managementAuth.routes";
+import managementManagersRoutes from "./routes/managementManagers.routes";
+import managementMembersRoutes from "./routes/managementMembers.routes";
+import memberAuthRoutes from "./routes/memberAuth.routes";
 
 const app = express();
 
@@ -119,6 +123,16 @@ app.use(
   "/api/coop-admin/cooperatives/:cooperativeId/members",
   coopMembersRoutes,
 );
+app.use("/api/management", managementAuthRoutes);
+app.use(
+  "/api/management/cooperatives/:cooperativeId/managers",
+  managementManagersRoutes,
+);
+app.use(
+  "/api/management/cooperatives/:cooperativeId/members",
+  managementMembersRoutes,
+);
+app.use("/api/member", memberAuthRoutes);
 
 // ─── Base Route ─────────────────────────────────────────────────────────────
 app.get("/", (_req, res) => {

@@ -16,6 +16,7 @@ export async function inviteMember(
   dto: { firstName: string; lastName: string; email: string },
   cooperativeId: string,
   callingAdminId: string,
+  callerType: "Admin" | "Manager" = "Admin",
 ) {
   logger.info({ email: dto.email, cooperativeId }, "Service: inviteMember");
 
@@ -54,7 +55,7 @@ export async function inviteMember(
       email: dto.email,
       hashedPassword,
       invitedByAdminId: callingAdminId,
-      invitedByAdminType: "Admin",
+      invitedByAdminType: callerType,
     });
     logger.info({ memberId }, "Service: inviteMember — MemberUser created");
   }

@@ -23,7 +23,7 @@ This is the portal for the manager of a particular coperative or coperatives
 - Main Text => Manager Portal
 - Sub text => {{come up with something}}
 - Small text => {{come up with something}}
-- Colour scheme is Blue (#7F56D9)
+- Colour scheme is Sky Blue (#2761F5)
   \_Selcecting this portal option routes you to http://localhost:5173/manager/login
 
 #### Portal 3 => Member Portal

@@ -23,6 +23,7 @@ export async function inviteManager(
   },
   cooperativeId: string,
   callingAdminId: string,
+  callerType: "Admin" | "Manager" = "Admin",
 ) {
   logger.info(
     { email: dto.email, role: dto.role, cooperativeId },
@@ -79,7 +80,7 @@ export async function inviteManager(
       email: dto.email,
       hashedPassword,
       invitedByAdminId: callingAdminId,
-      invitedByAdminType: "Admin",
+      invitedByAdminType: callerType,
     });
     logger.info(
       { managerId },
