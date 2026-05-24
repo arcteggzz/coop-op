@@ -142,6 +142,7 @@ export async function listMembers(
       isActive: m.IsActive === 1,
       dateInvited: m.DateInvited,
       dateCreated: m.DateCreated,
+      accountNumber: m.AccountNumber ?? null,
     })),
     page: query.page,
     pageSize: query.pageSize,

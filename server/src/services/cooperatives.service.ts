@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from "uuid";
 import { logger } from "../utils/logger";
 import { NotFoundError, ConflictError } from "../middlewares/errorHandler";
 import * as repo from "../repositories/cooperatives.repository";
+import { countManagersForCooperative } from "../repositories/managers.repository";
+import { countMembersForCooperative } from "../repositories/members.repository";
 import { publishToQueue } from "../utils/queue";
 
 // ─── Create Cooperative ───────────────────────────────────────────────────────
@@ -68,6 +70,9 @@ export async function listCooperatives(query: {
       id: c.Id,
       name: c.Name,
       createdByAdminId: c.CreatedByAdminId,
+      createdByAdminName: c.CreatedByAdminName ?? null,
+      memberCount: Number(c.MemberCount) ?? 0,
+      managerCount: Number(c.ManagerCount) ?? 0,
       dateCreated: c.DateCreated,
     })),
     page: query.page,
@@ -87,15 +92,22 @@ export async function getCooperativeById(cooperativeId: string) {
     throw new NotFoundError("Cooperative not found");
   }
 
-  const properties = await repo.findCooperativePropertiesById(cooperativeId);
+  const [properties, managerCount, memberCount] = await Promise.all([
+    repo.findCooperativePropertiesById(cooperativeId),
+    countManagersForCooperative(cooperativeId),
+    countMembersForCooperative(cooperativeId),
+  ]);
   logger.info({ cooperativeId }, "Service: getCooperativeById — found");
 
   return {
     id: cooperative.Id,
     name: cooperative.Name,
     createdByAdminId: cooperative.CreatedByAdminId,
+    createdByAdminName: cooperative.CreatedByAdminName ?? null,
     dateCreated: cooperative.DateCreated,
     dateUpdated: cooperative.DateUpdated,
+    managerCount,
+    memberCount,
     properties: properties.map((p) => ({
       id: p.Id,
       key: p.Key,
@@ -136,7 +148,10 @@ export async function createCooperativeWallet(
   cooperativeId: string,
   walletName: string,
 ) {
-  logger.info({ cooperativeId, walletName }, "Service: createCooperativeWallet");
+  logger.info(
+    { cooperativeId, walletName },
+    "Service: createCooperativeWallet",
+  );
 
   const cooperative = await repo.findCooperativeById(cooperativeId);
   if (!cooperative) {
@@ -147,7 +162,10 @@ export async function createCooperativeWallet(
     throw new NotFoundError("Cooperative not found");
   }
 
-  await publishToQueue("create-cooperative-wallet", { cooperativeId, walletName });
+  await publishToQueue("create-cooperative-wallet", {
+    cooperativeId,
+    walletName,
+  });
   logger.info(
     { cooperativeId, walletName },
     "Service: createCooperativeWallet — wallet creation queued",

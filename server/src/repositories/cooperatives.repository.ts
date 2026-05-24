@@ -6,10 +6,21 @@ export interface CooperativeRow extends RowDataPacket {
   Id: string;
   Name: string;
   CreatedByAdminId: string;
+  CreatedByAdminName: string | null;
   CreatedByAdminType: string;
   DateCreated: Date;
   DateUpdated: Date | null;
   DateDeleted: Date | null;
+}
+
+export interface CooperativeListRow extends RowDataPacket {
+  Id: string;
+  Name: string;
+  CreatedByAdminId: string;
+  CreatedByAdminName: string | null;
+  MemberCount: number;
+  ManagerCount: number;
+  DateCreated: Date;
 }
 
 export interface CooperativePropertyRow extends RowDataPacket {
@@ -43,7 +54,10 @@ export async function findCooperativeById(
 ): Promise<CooperativeRow | null> {
   logger.info({ cooperativeId: id }, "Repository: findCooperativeById");
   const [rows] = await pool.execute<CooperativeRow[]>(
-    "SELECT * FROM Cooperatives WHERE Id = ? AND DateDeleted IS NULL",
+    `SELECT c.*, a.FullName AS CreatedByAdminName
+     FROM Cooperatives c
+     LEFT JOIN AdminUsers a ON a.Id = c.CreatedByAdminId AND a.DateDeleted IS NULL
+     WHERE c.Id = ? AND c.DateDeleted IS NULL`,
     [id],
   );
   return rows.length > 0 ? rows[0] : null;
@@ -66,22 +80,31 @@ export async function listCooperatives(
   filters: { name?: string },
   page: number,
   pageSize: number,
-): Promise<CooperativeRow[]> {
+): Promise<CooperativeListRow[]> {
   logger.info({ filters, page, pageSize }, "Repository: listCooperatives");
-  const conditions: string[] = ["DateDeleted IS NULL"];
+  const conditions: string[] = ["c.DateDeleted IS NULL"];
   const params: (string | number)[] = [];
 
   if (filters.name) {
-    conditions.push("Name LIKE ?");
+    conditions.push("c.Name LIKE ?");
     params.push(`%${filters.name}%`);
   }
 
   const where = conditions.join(" AND ");
   const offset = (page - 1) * pageSize;
 
-  const [rows] = await pool.execute<CooperativeRow[]>(
-    `SELECT Id, Name, CreatedByAdminId, CreatedByAdminType, DateCreated, DateUpdated
-     FROM Cooperatives WHERE ${where} ORDER BY DateCreated DESC LIMIT ${pageSize} OFFSET ${offset}`,
+  const [rows] = await pool.execute<CooperativeListRow[]>(
+    `SELECT c.Id, c.Name, c.CreatedByAdminId,
+            a.FullName AS CreatedByAdminName,
+            (SELECT COUNT(*) FROM MemberUsersCooperatives muc
+             WHERE muc.CooperativeId = c.Id AND muc.DateDeleted IS NULL) AS MemberCount,
+            (SELECT COUNT(*) FROM ManagementUsersCooperatives mgrc
+             WHERE mgrc.CooperativeId = c.Id AND mgrc.DateDeleted IS NULL) AS ManagerCount,
+            c.DateCreated
+     FROM Cooperatives c
+     LEFT JOIN AdminUsers a ON a.Id = c.CreatedByAdminId AND a.DateDeleted IS NULL
+     WHERE ${where}
+     ORDER BY c.DateCreated DESC LIMIT ${pageSize} OFFSET ${offset}`,
     params,
   );
   return rows;

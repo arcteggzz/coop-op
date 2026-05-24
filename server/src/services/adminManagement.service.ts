@@ -10,6 +10,7 @@ import {
 } from "../middlewares/errorHandler";
 import { sendMail } from "../utils/mailer";
 import * as repo from "../repositories/adminManagement.repository";
+import { getAdminPermissions } from "../repositories/adminManagement.repository";
 
 // ─── Invite Admin ─────────────────────────────────────────────────────────────
 export async function inviteAdmin(
@@ -92,6 +93,14 @@ export async function listAdmins(query: {
   const totalPages = Math.ceil(totalCount / query.pageSize);
   logger.info({ totalCount, page: query.page }, "Service: listAdmins — result");
 
+  const adminRoleAdmins = data.filter((a) => a.Role === "Admin");
+  const permissionsResults = await Promise.all(
+    adminRoleAdmins.map((a) => getAdminPermissions(a.Id)),
+  );
+  const permissionsMap = new Map(
+    adminRoleAdmins.map((a, i) => [a.Id, permissionsResults[i]]),
+  );
+
   return {
     data: data.map((a) => ({
       id: a.Id,
@@ -102,6 +111,7 @@ export async function listAdmins(query: {
       defaultPasswordChanged: a.DefaultPasswordChanged === 1,
       dateInvited: a.DateInvited,
       dateCreated: a.DateCreated,
+      permissions: permissionsMap.get(a.Id) ?? [],
     })),
     page: query.page,
     pageSize: query.pageSize,
