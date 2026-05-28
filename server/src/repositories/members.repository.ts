@@ -198,6 +198,7 @@ export interface MemberCooperativeLoginRow extends RowDataPacket {
   CooperativeId: string;
   CooperativeName: string;
   IsDefault: number;
+  DateCreated: Date;
 }
 
 export async function findMemberCooperativesForLogin(
@@ -205,7 +206,7 @@ export async function findMemberCooperativesForLogin(
 ): Promise<MemberCooperativeLoginRow[]> {
   logger.info({ memberId }, "Repository: findMemberCooperativesForLogin");
   const [rows] = await pool.execute<MemberCooperativeLoginRow[]>(
-    `SELECT muc.CooperativeId, c.Name AS CooperativeName, muc.IsDefault
+    `SELECT muc.CooperativeId, c.Name AS CooperativeName, muc.IsDefault, muc.DateCreated
      FROM MemberUsersCooperatives muc
      JOIN Cooperatives c ON c.Id = muc.CooperativeId
      WHERE muc.MemberId = ? AND muc.DateDeleted IS NULL AND c.DateDeleted IS NULL`,

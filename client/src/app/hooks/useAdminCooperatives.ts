@@ -119,3 +119,40 @@ export function useRevokeCooperativeMember(cooperativeId: string) {
     },
   });
 }
+
+// ─── Dashboard: Summary + Wallets ─────────────────────────────────────────────
+
+export function useAdminCooperativeSummary(cooperativeId: string) {
+  return useQuery({
+    queryKey: ["admin-coop-summary", cooperativeId],
+    queryFn: () => api.getAdminCooperativeSummary(cooperativeId),
+    enabled: !!cooperativeId,
+  });
+}
+
+export function useAdminCooperativeWallets(cooperativeId: string) {
+  return useQuery({
+    queryKey: ["admin-coop-wallets", cooperativeId],
+    queryFn: () => api.getAdminCooperativeWallets(cooperativeId),
+    enabled: !!cooperativeId,
+  });
+}
+
+export function useCreateAdminCooperativeWallet(cooperativeId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (walletName: string) =>
+      api.createAdminCooperativeWallet(cooperativeId, walletName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["admin-coop-wallets", cooperativeId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-coop-summary", cooperativeId],
+      });
+    },
+    onError: (err) => {
+      toast.error(getErrorMessage(err));
+    },
+  });
+}

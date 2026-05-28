@@ -27,6 +27,7 @@ export interface CooperativeRef {
   cooperativeId: string;
   cooperativeName: string;
   isDefault: boolean;
+  memberSince?: string;
   role?: string;
   permissions?: string[];
 }

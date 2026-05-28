@@ -128,7 +128,15 @@ export default function AdminCooperatives() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-[#e5e7eb] bg-[#f9fafb]">
-                  {["#", "Name", "Created By", "Managers", "Members", "Date Created", "Actions"].map((col) => (
+                  {[
+                    "#",
+                    "Name",
+                    "Created By",
+                    "Managers",
+                    "Members",
+                    "Date Created",
+                    "Actions",
+                  ].map((col) => (
                     <th
                       key={col}
                       className="px-5 py-3.5 text-[12px] font-semibold text-[#6b7280] uppercase tracking-wide whitespace-nowrap"
@@ -181,7 +189,7 @@ export default function AdminCooperatives() {
                       <td className="px-5 py-4">
                         <Link
                           to={`/admin/cooperatives/${coop.id}`}
-                          className="text-[12px] font-medium text-[#2761F5] hover:underline"
+                          className="text-[12px] font-medium text-[#0D8FAF] hover:underline"
                         >
                           View
                         </Link>

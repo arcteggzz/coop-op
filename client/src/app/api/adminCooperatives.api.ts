@@ -169,3 +169,67 @@ export async function revokeCooperativeMember(
     `/api/coop-admin/cooperatives/${cooperativeId}/members/${memberId}/revoke`,
   );
 }
+
+// ─── Dashboard: Summary + Wallets ─────────────────────────────────────────────
+
+export interface AdminCooperativeSummary {
+  memberCount: number;
+  managerCount: number;
+  walletCount: number;
+  loansCount: number;
+  duesCollected: number;
+}
+
+export interface AdminCooperativeWallet {
+  id: string;
+  walletName: string;
+  accountNumber: string;
+  bankName: string;
+  walletId: string;
+  dateCreated: string;
+}
+
+const adminCoopBase = (cooperativeId: string) =>
+  `/api/coop-admin/cooperatives/${cooperativeId}`;
+
+export async function getAdminCooperativeSummary(
+  cooperativeId: string,
+): Promise<AdminCooperativeSummary> {
+  const res = await axiosInstance.get<{
+    success: boolean;
+    data: AdminCooperativeSummary;
+  }>(`${adminCoopBase(cooperativeId)}/summary`);
+  return res.data.data;
+}
+
+export async function getAdminCooperativeWallets(
+  cooperativeId: string,
+): Promise<AdminCooperativeWallet[]> {
+  const res = await axiosInstance.get<{
+    success: boolean;
+    data: AdminCooperativeWallet[];
+  }>(`${adminCoopBase(cooperativeId)}/wallets`);
+  return res.data.data;
+}
+
+export async function getAdminCooperativeWalletBalance(
+  cooperativeId: string,
+  accountNumber: string,
+): Promise<{ availableBalance: number }> {
+  const res = await axiosInstance.get<{
+    success: boolean;
+    data: { availableBalance: number };
+  }>(`${adminCoopBase(cooperativeId)}/wallets/balance`, {
+    params: { accountNumber },
+  });
+  return res.data.data;
+}
+
+export async function createAdminCooperativeWallet(
+  cooperativeId: string,
+  walletName: string,
+): Promise<void> {
+  await axiosInstance.post(`${adminCoopBase(cooperativeId)}/create-wallet`, {
+    walletName,
+  });
+}

@@ -22,6 +22,7 @@ import coopMembersRoutes from "./routes/coopMembers.routes";
 import managementAuthRoutes from "./routes/managementAuth.routes";
 import managementManagersRoutes from "./routes/managementManagers.routes";
 import managementMembersRoutes from "./routes/managementMembers.routes";
+import managerDashboardRoutes from "./routes/managerDashboard.routes";
 import memberAuthRoutes from "./routes/memberAuth.routes";
 
 const app = express();
@@ -131,6 +132,10 @@ app.use(
 app.use(
   "/api/management/cooperatives/:cooperativeId/members",
   managementMembersRoutes,
+);
+app.use(
+  "/api/management/cooperatives/:cooperativeId",
+  managerDashboardRoutes,
 );
 app.use("/api/member", memberAuthRoutes);
 

@@ -211,4 +211,22 @@ router.post(
   controller.createCooperativeWallet,
 );
 
+router.get(
+  "/:cooperativeId/summary",
+  requireAdminPermission("CoopCooperativesRead"),
+  controller.getCooperativeSummary,
+);
+
+router.get(
+  "/:cooperativeId/wallets",
+  requireAdminPermission("CoopCooperativesRead"),
+  controller.getCooperativeWallets,
+);
+
+router.get(
+  "/:cooperativeId/wallets/balance",
+  requireAdminPermission("CoopCooperativesRead"),
+  controller.getCooperativeWalletBalance,
+);
+
 export default router;

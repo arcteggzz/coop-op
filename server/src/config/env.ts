@@ -30,6 +30,7 @@ export const env = {
     apiKey: process.env.EMBEDLY_API_KEY || "",
     apiUrl: process.env.EMBEDLY_API_URL || "",
     payoutBaseUrl: process.env.EMBEDLY_PAYOUT_BASE_URL || "",
+    bankName: process.env.EMBEDLY_BANK_NAME || "Sterling Bank",
     customerTypeId: process.env.EMBEDLY_CUSTOMER_TYPE_ID || "",
     countryId: process.env.EMBEDLY_COUNTRY_ID || "",
     customerAddress: process.env.EMBEDLY_CUSTOMER_ADDRESS || "",
@@ -62,10 +63,6 @@ export const env = {
     },
   },
 
-  withdrawal: {
-    maxSchoolWallets: parseInt(process.env.MAX_SCHOOL_WALLETS || "3", 10),
-  },
-
   email: {
     host: process.env.EMAIL_HOST || "",
     port: parseInt(process.env.EMAIL_PORT || "587", 10),
@@ -87,6 +84,10 @@ export const env = {
 
   auth: {
     defaultPassword: process.env.DEFAULT_PASSWORD || "",
+  },
+
+  cooperative: {
+    maxWallets: parseInt(process.env.MAX_COOPERATIVE_WALLETS || "5", 10),
   },
 
   rabbitmq: {

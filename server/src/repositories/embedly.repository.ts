@@ -1,6 +1,6 @@
-import { RowDataPacket, ResultSetHeader } from 'mysql2';
-import { pool } from '../config/database';
-import { logger } from '../utils/logger';
+import { RowDataPacket, ResultSetHeader } from "mysql2";
+import { pool } from "../config/database";
+import { logger } from "../utils/logger";
 
 export interface EmbedlyCustomerRow extends RowDataPacket {
   Id: string;
@@ -39,12 +39,23 @@ export async function createEmbedlyCustomer(
   lastName: string,
   customerId: string,
 ): Promise<void> {
-  logger.info({ customerType, ownerId, cooperativeId }, 'Repository: createEmbedlyCustomer');
-  const { v4: uuidv4 } = require('uuid');
+  logger.info(
+    { customerType, ownerId, cooperativeId },
+    "Repository: createEmbedlyCustomer",
+  );
+  const { v4: uuidv4 } = require("uuid");
   await pool.execute<ResultSetHeader>(
     `INSERT INTO EmbedlyCustomers (Id, CustomerType, OwnerId, CooperativeId, FirstName, LastName, CustomerId, DateCreated)
      VALUES (?, ?, ?, ?, ?, ?, ?, NOW(6))`,
-    [uuidv4(), customerType, ownerId, cooperativeId, firstName, lastName, customerId],
+    [
+      uuidv4(),
+      customerType,
+      ownerId,
+      cooperativeId,
+      firstName,
+      lastName,
+      customerId,
+    ],
   );
 }
 
@@ -54,9 +65,27 @@ export async function findEmbedlyWalletByOwnerAndCooperative(
   ownerId: string,
   cooperativeId: string,
 ): Promise<EmbedlyWalletRow | null> {
-  logger.info({ ownerId, cooperativeId }, 'Repository: findEmbedlyWalletByOwnerAndCooperative');
+  logger.info(
+    { ownerId, cooperativeId },
+    "Repository: findEmbedlyWalletByOwnerAndCooperative",
+  );
   const [rows] = await pool.execute<EmbedlyWalletRow[]>(
-    'SELECT * FROM EmbedlyWallets WHERE OwnerId = ? AND CooperativeId = ?',
+    "SELECT * FROM EmbedlyWallets WHERE OwnerId = ? AND CooperativeId = ?",
+    [ownerId, cooperativeId],
+  );
+  return rows.length > 0 ? rows[0] : null;
+}
+
+export async function findMemberEmbedlyWalletByOwnerAndCooperative(
+  ownerId: string,
+  cooperativeId: string,
+): Promise<EmbedlyWalletRow | null> {
+  logger.info(
+    { ownerId, cooperativeId },
+    "Repository: findMemberEmbedlyWalletByOwnerAndCooperative",
+  );
+  const [rows] = await pool.execute<EmbedlyWalletRow[]>(
+    "SELECT * FROM EmbedlyWallets WHERE OwnerId = ? AND WalletType = 'Member' AND CooperativeId = ?",
     [ownerId, cooperativeId],
   );
   return rows.length > 0 ? rows[0] : null;
@@ -71,21 +100,33 @@ export async function createEmbedlyWallet(
   walletId: string,
   walletName?: string,
 ): Promise<void> {
-  logger.info({ walletType, ownerId, cooperativeId }, 'Repository: createEmbedlyWallet');
-  const { v4: uuidv4 } = require('uuid');
+  logger.info(
+    { walletType, ownerId, cooperativeId },
+    "Repository: createEmbedlyWallet",
+  );
+  const { v4: uuidv4 } = require("uuid");
   await pool.execute<ResultSetHeader>(
     `INSERT INTO EmbedlyWallets (Id, WalletType, OwnerId, CooperativeId, CustomerId, AccountNumber, WalletId, WalletName, IsLocalRestricted, DateCreated)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NOW(6))`,
-    [uuidv4(), walletType, ownerId, cooperativeId, customerId, accountNumber, walletId, walletName ?? null],
+    [
+      uuidv4(),
+      walletType,
+      ownerId,
+      cooperativeId,
+      customerId,
+      accountNumber,
+      walletId,
+      walletName ?? null,
+    ],
   );
 }
 
 export async function findEmbedlyWalletByOwnerId(
   ownerId: string,
 ): Promise<EmbedlyWalletRow | null> {
-  logger.info({ ownerId }, 'Repository: findEmbedlyWalletByOwnerId');
+  logger.info({ ownerId }, "Repository: findEmbedlyWalletByOwnerId");
   const [rows] = await pool.execute<EmbedlyWalletRow[]>(
-    'SELECT * FROM EmbedlyWallets WHERE OwnerId = ? LIMIT 1',
+    "SELECT * FROM EmbedlyWallets WHERE OwnerId = ? LIMIT 1",
     [ownerId],
   );
   return rows.length > 0 ? rows[0] : null;
@@ -95,10 +136,41 @@ export async function findEmbedlyWalletByOwnerIdAndWalletName(
   ownerId: string,
   walletName: string,
 ): Promise<EmbedlyWalletRow | null> {
-  logger.info({ ownerId, walletName }, 'Repository: findEmbedlyWalletByOwnerIdAndWalletName');
+  logger.info(
+    { ownerId, walletName },
+    "Repository: findEmbedlyWalletByOwnerIdAndWalletName",
+  );
   const [rows] = await pool.execute<EmbedlyWalletRow[]>(
-    'SELECT * FROM EmbedlyWallets WHERE OwnerId = ? AND WalletName = ? LIMIT 1',
+    "SELECT * FROM EmbedlyWallets WHERE OwnerId = ? AND WalletName = ? LIMIT 1",
     [ownerId, walletName],
   );
   return rows.length > 0 ? rows[0] : null;
+}
+
+export async function findCooperativeWalletsByCooperativeId(
+  cooperativeId: string,
+): Promise<EmbedlyWalletRow[]> {
+  logger.info(
+    { cooperativeId },
+    "Repository: findCooperativeWalletsByCooperativeId",
+  );
+  const [rows] = await pool.execute<EmbedlyWalletRow[]>(
+    "SELECT * FROM EmbedlyWallets WHERE WalletType = 'Cooperative' AND CooperativeId = ? ORDER BY DateCreated ASC",
+    [cooperativeId],
+  );
+  return rows;
+}
+
+export async function countCooperativeWalletsByCooperativeId(
+  cooperativeId: string,
+): Promise<number> {
+  logger.info(
+    { cooperativeId },
+    "Repository: countCooperativeWalletsByCooperativeId",
+  );
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    "SELECT COUNT(*) AS total FROM EmbedlyWallets WHERE WalletType = 'Cooperative' AND CooperativeId = ?",
+    [cooperativeId],
+  );
+  return (rows[0] as RowDataPacket & { total: number }).total;
 }

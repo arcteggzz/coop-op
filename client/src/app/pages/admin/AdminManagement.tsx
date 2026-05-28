@@ -48,7 +48,7 @@ function RoleBadge({ role }: { role: AdminRole }) {
   }
   if (role === "SuperAdmin") {
     return (
-      <span className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[rgba(39,97,245,0.1)] text-[#2761F5]">
+      <span className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[rgba(39,97,245,0.1)] text-[#0D8FAF]">
         SuperAdmin
       </span>
     );
@@ -509,7 +509,7 @@ export default function AdminManagement() {
                                     currentPermissions: admin.permissions ?? [],
                                   })
                                 }
-                                className="text-[12px] cursor-pointer font-medium text-[#2761F5] hover:underline whitespace-nowrap"
+                                className="text-[12px] cursor-pointer font-medium text-[#0D8FAF] hover:underline whitespace-nowrap"
                               >
                                 Update Perms
                               </button>

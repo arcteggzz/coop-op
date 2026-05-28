@@ -8,6 +8,7 @@ import {
   createCooperativeWalletSchema,
 } from "../validations/coopCooperatives.validation";
 import * as service from "../services/cooperatives.service";
+import * as dashboardService from "../services/cooperativeDashboard.service";
 
 // ─── POST /api/coop-admin/cooperatives ────────────────────────────────────────
 export async function createCooperative(
@@ -122,6 +123,71 @@ export async function createCooperativeWallet(
       value.walletName,
     );
     res.status(202).json({ success: true, data: { cooperative } });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─── GET /api/coop-admin/cooperatives/:cooperativeId/summary ──────────────────
+export async function getCooperativeSummary(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { cooperativeId } = req.params as { cooperativeId: string };
+    logger.info(
+      { cooperativeId },
+      "Controller: GET /api/coop-admin/cooperatives/:cooperativeId/summary",
+    );
+    const summary = await dashboardService.getCooperativeSummary(cooperativeId);
+    res.status(200).json({ success: true, data: summary });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─── GET /api/coop-admin/cooperatives/:cooperativeId/wallets ──────────────────
+export async function getCooperativeWallets(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { cooperativeId } = req.params as { cooperativeId: string };
+    logger.info(
+      { cooperativeId },
+      "Controller: GET /api/coop-admin/cooperatives/:cooperativeId/wallets",
+    );
+    const wallets =
+      await dashboardService.getCooperativeWallets(cooperativeId);
+    res.status(200).json({ success: true, data: wallets });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─── GET /api/coop-admin/cooperatives/:cooperativeId/wallets/balance ──────────
+export async function getCooperativeWalletBalance(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { accountNumber } = req.query as { accountNumber?: string };
+    if (!accountNumber) {
+      res
+        .status(400)
+        .json({ success: false, error: { message: "accountNumber is required" } });
+      return;
+    }
+    logger.info(
+      { accountNumber },
+      "Controller: GET /api/coop-admin/cooperatives/:cooperativeId/wallets/balance",
+    );
+    const balance =
+      await dashboardService.getCooperativeWalletBalance(accountNumber);
+    res.status(200).json({ success: true, data: balance });
   } catch (err) {
     next(err);
   }

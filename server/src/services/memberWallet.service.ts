@@ -41,10 +41,11 @@ export async function processCreateMemberWallet(
   }
 
   // 3. Idempotency — one wallet per member per cooperative
-  const existingWallet = await embedlyRepo.findEmbedlyWalletByOwnerAndCooperative(
-    memberId,
-    cooperativeId,
-  );
+  const existingWallet =
+    await embedlyRepo.findEmbedlyWalletByOwnerAndCooperative(
+      memberId,
+      cooperativeId,
+    );
   if (existingWallet) {
     logger.warn(
       { memberId, cooperativeId },
@@ -111,8 +112,9 @@ export async function processCreateMemberWallet(
 
   const walletId = walletResponse.data.data.id;
   const accountNumber = walletResponse.data.data.virtualAccount.accountNumber;
+  const walletName = `${firstName} ${lastName}`;
   logger.info(
-    { memberId, walletId, accountNumber },
+    { memberId, walletId, accountNumber, walletName },
     "Worker: Embedly wallet created",
   );
 
@@ -124,9 +126,10 @@ export async function processCreateMemberWallet(
     embedlyCustomerId,
     accountNumber,
     walletId,
+    walletName,
   );
   logger.info(
-    { memberId, walletId, accountNumber },
+    { memberId, walletId, accountNumber, walletName },
     "Worker: EmbedlyWallet record saved",
   );
 
@@ -137,7 +140,7 @@ export async function processCreateMemberWallet(
     `Member ID: ${memberId}\n` +
     `Account Number: ${accountNumber}\n` +
     `Bank: Sterling Bank\n` +
-    `Account Name: VC/${firstName} ${lastName}\n`;
+    `Account Name: VC/${walletName}\n`;
 
   sendMail({
     to: member.Email,
@@ -148,7 +151,7 @@ export async function processCreateMemberWallet(
   });
 
   logger.info(
-    { memberId },
+    { memberId, walletName },
     "Worker: processCreateMemberWallet completed successfully",
   );
 }

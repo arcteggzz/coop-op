@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import PortalSelection from "./pages/PortalSelection";
-import ManagerLoginStub from "./pages/manager/ManagerLoginStub";
-import MemberLoginStub from "./pages/member/MemberLoginStub";
+
+// Admin
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminChangePassword from "./pages/admin/AdminChangePassword";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -9,15 +9,39 @@ import AdminCooperatives from "./pages/admin/AdminCooperatives";
 import AdminCooperativeDetail from "./pages/admin/AdminCooperativeDetail";
 import AdminManagement from "./pages/admin/AdminManagement";
 import PlaceholderPage from "./pages/admin/PlaceholderPage";
+
+// Manager
+import ManagerLogin from "./pages/manager/ManagerLogin";
+import ManagerChangePassword from "./pages/manager/ManagerChangePassword";
+import ManagerDashboard from "./pages/manager/ManagerDashboard";
+import ManagerManagers from "./pages/manager/ManagerManagers";
+import ManagerMembers from "./pages/manager/ManagerMembers";
+import ManagerPlaceholderPage from "./pages/manager/ManagerPlaceholderPage";
+
+// Member
+import MemberLogin from "./pages/member/MemberLogin";
+import MemberChangePassword from "./pages/member/MemberChangePassword";
+import MemberDashboard from "./pages/member/MemberDashboard";
+import MemberTransactions from "./pages/member/MemberTransactions";
+import MemberPlaceholderPage from "./pages/member/MemberPlaceholderPage";
+
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export const router = createBrowserRouter([
   // Public
   { path: "/", Component: PortalSelection },
+
+  // Admin public
   { path: "/admin/login", Component: AdminLogin },
   { path: "/admin/change-password", Component: AdminChangePassword },
-  { path: "/manager/login", Component: ManagerLoginStub },
-  { path: "/member/login", Component: MemberLoginStub },
+
+  // Manager public
+  { path: "/manager/login", Component: ManagerLogin },
+  { path: "/manager/change-password", Component: ManagerChangePassword },
+
+  // Member public
+  { path: "/member/login", Component: MemberLogin },
+  { path: "/member/change-password", Component: MemberChangePassword },
 
   // Protected admin routes
   {
@@ -81,6 +105,106 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute userType="admin">
         <PlaceholderPage title="Settings" />
+      </ProtectedRoute>
+    ),
+  },
+
+  // Protected manager routes
+  {
+    path: "/manager/dashboard",
+    element: (
+      <ProtectedRoute userType="manager">
+        <ManagerDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/manager/managers",
+    element: (
+      <ProtectedRoute userType="manager">
+        <ManagerManagers />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/manager/members",
+    element: (
+      <ProtectedRoute userType="manager">
+        <ManagerMembers />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/manager/loans",
+    element: (
+      <ProtectedRoute userType="manager">
+        <ManagerPlaceholderPage title="Loans" />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/manager/dues",
+    element: (
+      <ProtectedRoute userType="manager">
+        <ManagerPlaceholderPage title="Dues" />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/manager/settings",
+    element: (
+      <ProtectedRoute userType="manager">
+        <ManagerPlaceholderPage title="Settings" />
+      </ProtectedRoute>
+    ),
+  },
+
+  // Protected member routes
+  {
+    path: "/member/dashboard",
+    element: (
+      <ProtectedRoute userType="member">
+        <MemberDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/member/transactions",
+    element: (
+      <ProtectedRoute userType="member">
+        <MemberTransactions />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/member/dues",
+    element: (
+      <ProtectedRoute userType="member">
+        <MemberPlaceholderPage title="Dues" />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/member/loans",
+    element: (
+      <ProtectedRoute userType="member">
+        <MemberPlaceholderPage title="Loans" />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/member/savings",
+    element: (
+      <ProtectedRoute userType="member">
+        <MemberPlaceholderPage title="Savings" />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/member/settings",
+    element: (
+      <ProtectedRoute userType="member">
+        <MemberPlaceholderPage title="Settings" />
       </ProtectedRoute>
     ),
   },

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import * as controller from "../controllers/memberAuth.controller";
+import * as walletController from "../controllers/memberWallet.controller";
 import {
   requireMemberAuth,
   requireMemberCooperativeAccess,
@@ -215,6 +216,33 @@ router.get(
   requireMemberAuth,
   requireMemberCooperativeAccess,
   controller.getDashboard,
+);
+
+router.get(
+  "/wallet",
+  requireMemberAuth,
+  requireMemberCooperativeAccess,
+  walletController.getWalletDetails,
+);
+
+router.get(
+  "/wallet/balance",
+  requireMemberAuth,
+  requireMemberCooperativeAccess,
+  walletController.getWalletBalance,
+);
+
+router.get(
+  "/wallet/transactions",
+  requireMemberAuth,
+  requireMemberCooperativeAccess,
+  walletController.getWalletTransactions,
+);
+
+router.post(
+  "/wallet/statement",
+  requireMemberAuth,
+  walletController.exportStatement,
 );
 
 export default router;
