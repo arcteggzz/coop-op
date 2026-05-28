@@ -230,10 +230,39 @@ export function usePayMemberDue(cooperativeId: string) {
       queryClient.invalidateQueries({
         queryKey: ["member-due-payments", cooperativeId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["dues-dashboard-summary", cooperativeId],
+      });
       toast.success("Payment successful.");
     },
     onError: (err) => {
       toast.error(getErrorMessage(err));
     },
+  });
+}
+
+// ─── Dashboard Summary hooks ──────────────────────────────────────────────────
+
+export function useAdminDueDashboardSummary(cooperativeId: string) {
+  return useQuery({
+    queryKey: ["dues-dashboard-summary", cooperativeId],
+    queryFn: () => api.getAdminDueDashboardSummary(cooperativeId),
+    enabled: !!cooperativeId,
+  });
+}
+
+export function useManagerDueDashboardSummary(cooperativeId: string) {
+  return useQuery({
+    queryKey: ["dues-dashboard-summary", cooperativeId],
+    queryFn: () => api.getManagerDueDashboardSummary(cooperativeId),
+    enabled: !!cooperativeId,
+  });
+}
+
+export function useMemberDueDashboardSummary(cooperativeId: string) {
+  return useQuery({
+    queryKey: ["dues-dashboard-summary", cooperativeId],
+    queryFn: () => api.getMemberDueDashboardSummary(cooperativeId),
+    enabled: !!cooperativeId,
   });
 }

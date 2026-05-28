@@ -316,3 +316,76 @@ export async function payMemberDue(
   }>(`/api/member/dues/${cooperativeId}/payments/${paymentId}/pay`);
   return res.data.data;
 }
+
+// ─── Dashboard Summary ────────────────────────────────────────────────────────
+
+export interface ActiveDueSummary {
+  dueId: string;
+  name: string;
+  amount: number;
+  cycleStart: string | null;
+  cycleEnd: string | null;
+  daysLeft: number | null;
+  paidCount: number;
+  unpaidCount: number;
+  totalExpected: number;
+  totalCollected: number;
+  percentageCollected: number;
+  memberStatus?: "paid" | "unpaid" | null;
+}
+
+export interface UpcomingDueSummary {
+  dueId: string;
+  name: string;
+  amount: number;
+  startDate: string;
+  daysUntilStart: number;
+  memberCount: number;
+}
+
+export interface DueDashboardSummary {
+  cooperativeId: string;
+  cycleLabel: string;
+  state: "active" | "upcoming" | "mixed" | "all_paid" | "no_dues";
+  aggregates: {
+    totalExpected: number;
+    totalCollected: number;
+    totalMembersBehind: number;
+    activeDuesCount: number;
+    upcomingDuesCount: number;
+  };
+  activeDues: ActiveDueSummary[];
+  upcomingDues: UpcomingDueSummary[];
+}
+
+export async function getAdminDueDashboardSummary(
+  cooperativeId: string,
+): Promise<DueDashboardSummary> {
+  const res = await axiosInstance.get<{
+    success: boolean;
+    data: DueDashboardSummary;
+  }>(
+    `/api/coop-admin/cooperatives/${cooperativeId}/dues/dashboard-summary`,
+  );
+  return res.data.data;
+}
+
+export async function getManagerDueDashboardSummary(
+  cooperativeId: string,
+): Promise<DueDashboardSummary> {
+  const res = await axiosInstance.get<{
+    success: boolean;
+    data: DueDashboardSummary;
+  }>(`/api/management/dues/${cooperativeId}/dashboard-summary`);
+  return res.data.data;
+}
+
+export async function getMemberDueDashboardSummary(
+  cooperativeId: string,
+): Promise<DueDashboardSummary> {
+  const res = await axiosInstance.get<{
+    success: boolean;
+    data: DueDashboardSummary;
+  }>(`/api/member/dues/${cooperativeId}/dashboard-summary`);
+  return res.data.data;
+}

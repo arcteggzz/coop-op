@@ -12,6 +12,8 @@ import {
   HandCoins,
   ArrowRight,
   X,
+  CheckCircle,
+  Clock,
 } from "lucide-react";
 import MemberLayout from "../../components/MemberLayout";
 import { useAuth } from "../../context/AuthContext";
@@ -24,6 +26,8 @@ import {
   exportMemberStatement,
   type WalletTransaction,
 } from "../../api/memberDashboard.api";
+import { useMemberDueDashboardSummary } from "../../hooks/useDues";
+import type { ActiveDueSummary, UpcomingDueSummary } from "../../api/dues.api";
 
 // ─── Wallet Card ──────────────────────────────────────────────────────────────
 
@@ -486,27 +490,165 @@ function TransactionRow({ tx }: { tx: WalletTransaction }) {
   );
 }
 
-function SummaryActionTracker() {
+function DuesAndPaymentsSection({
+  cooperativeId,
+}: {
+  cooperativeId: string;
+}) {
+  const navigate = useNavigate();
+  const { data: summary, isLoading } =
+    useMemberDueDashboardSummary(cooperativeId);
+
   return (
     <div className="bg-white rounded-2xl border border-[#e5e7eb] p-4">
       <p className="font-['Albert_Sans',sans-serif] text-[11px] font-semibold text-[#6b7280] uppercase tracking-wide mb-3">
-        Following Actions
+        Dues &amp; payments
       </p>
-      <div className="grid grid-cols-2 gap-3">
-        {["Dues", "Loans"].map((label) => (
-          <div
-            key={label}
-            className="bg-[#faf5ff] border border-[#e9d7fe] rounded-xl p-3 text-center"
-          >
-            <p className="font-['Albert_Sans',sans-serif] text-[12px] font-semibold text-[#7F56D9]">
-              {label}
-            </p>
-            <p className="font-['Albert_Sans',sans-serif] text-[10px] text-[#6b7280] mt-0.5">
-              Coming soon
-            </p>
+
+      {isLoading && (
+        <div className="space-y-3 animate-pulse">
+          <div className="h-14 bg-[#f3f4f6] rounded-xl" />
+          <div className="h-14 bg-[#f3f4f6] rounded-xl" />
+          <div className="h-10 bg-[#f3f4f6] rounded-xl" />
+        </div>
+      )}
+
+      {!isLoading && summary && (() => {
+        const unpaidDues = summary.activeDues.filter(
+          (d) => d.memberStatus === "unpaid",
+        );
+        const paidDues = summary.activeDues.filter(
+          (d) => d.memberStatus === "paid",
+        );
+        const upcomingDues = summary.upcomingDues;
+        const hasAnything =
+          unpaidDues.length > 0 ||
+          paidDues.length > 0 ||
+          upcomingDues.length > 0;
+
+        return (
+          <div className="space-y-3">
+            {/* 1. Unpaid dues */}
+            {unpaidDues.map((d) => (
+              <UnpaidDueCard
+                key={d.dueId}
+                due={d}
+                onPay={() => navigate("/member/dues")}
+              />
+            ))}
+
+            {/* 4. Paid dues */}
+            {paidDues.map((d) => (
+              <PaidDueCard key={d.dueId} due={d} />
+            ))}
+
+            {/* 5. Upcoming dues */}
+            {upcomingDues.map((d) => (
+              <UpcomingDueCard key={d.dueId} due={d} />
+            ))}
+
+            {/* 6. No loans placeholder */}
+            <div className="border border-dashed border-[#e9d7fe] rounded-xl p-3 flex items-center justify-between">
+              <span className="font-['Albert_Sans',sans-serif] text-[12px] text-[#9ca3af]">
+                No active loans
+              </span>
+              <button className="font-['Albert_Sans',sans-serif] text-[12px] font-semibold text-[#7F56D9] hover:underline cursor-pointer">
+                Apply for a loan →
+              </button>
+            </div>
+
+            {/* 7. All clear */}
+            {!hasAnything && (
+              <div className="bg-[#f9fafb] rounded-xl p-4 text-center">
+                <p className="font-['Albert_Sans',sans-serif] text-[13px] text-[#6b7280]">
+                  Nothing due right now. You're all caught up.
+                </p>
+              </div>
+            )}
           </div>
-        ))}
+        );
+      })()}
+    </div>
+  );
+}
+
+function UnpaidDueCard({
+  due,
+  onPay,
+}: {
+  due: ActiveDueSummary;
+  onPay: () => void;
+}) {
+  return (
+    <div className="bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3">
+      <div className="flex items-center justify-between mb-1">
+        <p className="font-['Albert_Sans',sans-serif] text-[13px] font-semibold text-[#101828]">
+          {due.name}
+        </p>
+        <span className="text-[10px] font-semibold bg-[rgba(220,38,38,0.15)] text-[#dc2626] px-2 py-0.5 rounded-full">
+          Unpaid
+        </span>
       </div>
+      <p className="font-['Albert_Sans',sans-serif] text-[20px] font-bold text-[#dc2626] mb-1">
+        ₦{due.amount.toLocaleString("en-NG")}
+      </p>
+      {due.cycleEnd && (
+        <p className="font-['Albert_Sans',sans-serif] text-[11px] text-[#6b7280] mb-2">
+          Due{" "}
+          {new Date(due.cycleEnd).toLocaleDateString("en-NG", {
+            day: "numeric",
+            month: "short",
+          })}
+          {due.daysLeft !== null && due.daysLeft > 0
+            ? ` · ${due.daysLeft} days left`
+            : due.daysLeft !== null && due.daysLeft <= 0
+              ? " · Overdue"
+              : ""}
+        </p>
+      )}
+      <button
+        onClick={onPay}
+        className="w-full py-2 rounded-[10px] text-[13px] font-semibold text-white bg-[#7F56D9] hover:bg-[#6941C6] transition-colors cursor-pointer"
+      >
+        Pay now
+      </button>
+    </div>
+  );
+}
+
+function PaidDueCard({ due }: { due: ActiveDueSummary }) {
+  return (
+    <div className="flex items-center gap-3 bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-3">
+      <CheckCircle size={18} className="text-[#16a34a] shrink-0" />
+      <div>
+        <p className="font-['Albert_Sans',sans-serif] text-[13px] font-medium text-[#374151]">
+          {due.name}
+        </p>
+        <p className="font-['Albert_Sans',sans-serif] text-[11px] text-[#16a34a] font-semibold">
+          Paid · ₦{due.amount.toLocaleString("en-NG")}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function UpcomingDueCard({ due }: { due: UpcomingDueSummary }) {
+  return (
+    <div className="flex items-center justify-between bg-[#f9fafb] border border-[#f3f4f6] rounded-xl p-3">
+      <div className="flex items-center gap-2">
+        <Clock size={14} className="text-[#9ca3af] shrink-0" />
+        <div>
+          <p className="font-['Albert_Sans',sans-serif] text-[13px] font-medium text-[#374151]">
+            {due.name}
+          </p>
+          <p className="font-['Albert_Sans',sans-serif] text-[11px] text-[#6b7280]">
+            ₦{due.amount.toLocaleString("en-NG")}
+          </p>
+        </div>
+      </div>
+      <span className="text-[10px] font-semibold bg-[#ede9fe] text-[#7F56D9] px-2 py-0.5 rounded-full">
+        Starts in {due.daysUntilStart}d
+      </span>
     </div>
   );
 }
@@ -581,8 +723,8 @@ export default function MemberDashboard() {
         {/* Section 2: Quick Actions */}
         <QuickActions cooperativeId={cooperativeId} wallet={wallet} />
 
-        {/* Section 3: Summary Action Tracker */}
-        <SummaryActionTracker />
+        {/* Section 3: Dues & Payments */}
+        <DuesAndPaymentsSection cooperativeId={cooperativeId} />
 
         {/* Section 4: Recent Activity */}
         <RecentActivity transactions={transactions} isLoading={txLoading} />

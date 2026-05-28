@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router";
 import AdminDues from "./AdminDues";
+import DuesDashboardWidget from "../../components/DuesDashboardWidget";
+import { useAdminDueDashboardSummary } from "../../hooks/useDues";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Users, UserCog, Wallet, X } from "lucide-react";
 import AdminLayout from "../../components/AdminLayout";
@@ -601,7 +603,7 @@ function AdminWalletsSection({ cooperativeId }: { cooperativeId: string }) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {wallets.map((wallet) => (
               <AdminCoopWalletCard
                 key={wallet.id}
@@ -661,6 +663,45 @@ function AdminWalletsSection({ cooperativeId }: { cooperativeId: string }) {
   );
 }
 
+// ── Overview: Dues Summary Section ────────────────────────────────────────────
+
+function AdminDuesSummarySection({ cooperativeId }: { cooperativeId: string }) {
+  const { data: summary, isLoading } =
+    useAdminDueDashboardSummary(cooperativeId);
+  return (
+    <div className="mt-4">
+      <DuesDashboardWidget
+        cooperativeId={cooperativeId}
+        summary={summary}
+        isLoading={isLoading}
+        viewAllLink={`/admin/cooperatives/${cooperativeId}/dues`}
+        createLink={`/admin/cooperatives/${cooperativeId}/dues`}
+        portalColor="#dc2626"
+      />
+    </div>
+  );
+}
+
+// ─── Coming Soon Section ──────────────────────────────────────────────────────
+
+function ComingSoonSection({ title }: { title: string }) {
+  return (
+    <div className="bg-white rounded-2xl border border-[#e5e7eb] p-6">
+      <div className="flex items-center justify-between mb-2">
+        <p className="font-['Albert_Sans',sans-serif] text-[16px] font-semibold text-[#101828]">
+          {title}
+        </p>
+        <span className="text-[10px] font-semibold bg-[#f3f4f6] text-[#9ca3af] px-2 py-1 rounded">
+          Coming Soon
+        </span>
+      </div>
+      <p className="font-['Albert_Sans',sans-serif] text-[13px] text-[#6b7280]">
+        🚧 This section is under construction.
+      </p>
+    </div>
+  );
+}
+
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function AdminCooperativeDetail() {
@@ -676,7 +717,7 @@ export default function AdminCooperativeDetail() {
   const [revokeMemberId, setRevokeMemberId] = useState<string | null>(null);
 
   const { data: coop, isLoading: coopLoading } = useCooperative(cooperativeId!);
-  console.log("Coop data:", coop);
+
   const { data: managersData, isLoading: managersLoading } =
     useCooperativeManagers(cooperativeId!);
   const { data: membersData, isLoading: membersLoading } =
@@ -789,62 +830,22 @@ export default function AdminCooperativeDetail() {
               <div>
                 <AdminSummaryCards cooperativeId={cooperativeId!} />
                 <AdminWalletsSection cooperativeId={cooperativeId!} />
-                <div className="bg-white rounded-2xl border border-[#e5e7eb] p-6">
-                  <h2 className="text-[16px] font-semibold text-[#101828] mb-4">
-                    Cooperative Details
-                  </h2>
-                  {coopLoading ? (
-                    <div className="space-y-3 animate-pulse">
-                      <div className="h-4 bg-[#f3f4f6] rounded w-1/3" />
-                      <div className="h-4 bg-[#f3f4f6] rounded w-1/2" />
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="flex gap-4">
-                        <span className="text-[13px] text-[#6b7280] w-32">
-                          Name
-                        </span>
-                        <span className="text-[14px] font-medium text-[#101828]">
-                          {coop?.name}
-                        </span>
-                      </div>
-                      <div className="flex gap-4">
-                        <span className="text-[13px] text-[#6b7280] w-32">
-                          Created By
-                        </span>
-                        <span className="text-[14px] text-[#374151]">
-                          {coop?.createdByAdminName ?? "—"}
-                        </span>
-                      </div>
-                      <div className="flex gap-4">
-                        <span className="text-[13px] text-[#6b7280] w-32">
-                          Date Created
-                        </span>
-                        <span className="text-[14px] text-[#374151]">
-                          {coop?.dateCreated
-                            ? formatDateTime(coop.dateCreated)
-                            : "—"}
-                        </span>
-                      </div>
-                      <div className="flex gap-4">
-                        <span className="text-[13px] text-[#6b7280] w-32">
-                          Managers
-                        </span>
-                        <span className="text-[14px] text-[#374151]">
-                          {coop?.managerCount ?? 0}
-                        </span>
-                      </div>
-                      <div className="flex gap-4">
-                        <span className="text-[13px] text-[#6b7280] w-32">
-                          Members
-                        </span>
-                        <span className="text-[14px] text-[#374151]">
-                          {coop?.memberCount ?? 0}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+
+                {/* Section 3: Dues & Levies */}
+                <section className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                  <AdminDuesSummarySection cooperativeId={cooperativeId!} />
+                  <ComingSoonSection title="Levies" />
+                </section>
+
+                {/* Section 4: Savings */}
+                <section>
+                  <ComingSoonSection title="Savings Summary" />
+                </section>
+
+                {/* Section 5: Loans */}
+                <section>
+                  <ComingSoonSection title="Loans" />
+                </section>
               </div>
             )}
 

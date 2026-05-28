@@ -12,6 +12,8 @@ import {
   getManagerCooperativeWalletBalance,
   type CooperativeWallet,
 } from "../../api/managerDashboard.api";
+import DuesDashboardWidget from "../../components/DuesDashboardWidget";
+import { useManagerDueDashboardSummary } from "../../hooks/useDues";
 
 const MAX_WALLETS = parseInt(
   import.meta.env.VITE_MAX_COOPERATIVE_WALLETS ?? "5",
@@ -26,25 +28,25 @@ function SummaryCards({ cooperativeId }: { cooperativeId: string }) {
   const cards = [
     {
       label: "Total Members",
-      value: isLoading ? null : summary?.memberCount ?? 0,
+      value: isLoading ? null : (summary?.memberCount ?? 0),
       icon: Users,
       comingSoon: false,
     },
     {
       label: "Total Managers",
-      value: isLoading ? null : summary?.managerCount ?? 0,
+      value: isLoading ? null : (summary?.managerCount ?? 0),
       icon: UserCog,
       comingSoon: false,
     },
     {
       label: "Cooperative Wallets",
-      value: isLoading ? null : summary?.walletCount ?? 0,
+      value: isLoading ? null : (summary?.walletCount ?? 0),
       icon: Wallet,
       comingSoon: false,
     },
     {
       label: "Active Loans",
-      value: isLoading ? null : summary?.loansCount ?? 0,
+      value: isLoading ? null : (summary?.loansCount ?? 0),
       icon: null,
       comingSoon: true,
     },
@@ -361,8 +363,7 @@ function WalletsSection({ cooperativeId }: { cooperativeId: string }) {
               key={i}
               className="rounded-2xl p-5 animate-pulse"
               style={{
-                background:
-                  "linear-gradient(135deg, #1BAFD6 0%, #0D8FAF 100%)",
+                background: "linear-gradient(135deg, #1BAFD6 0%, #0D8FAF 100%)",
                 opacity: 0.4,
               }}
             >
@@ -380,7 +381,7 @@ function WalletsSection({ cooperativeId }: { cooperativeId: string }) {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {wallets.map((wallet) => (
             <CoopWalletCard
               key={wallet.id}
@@ -421,6 +422,24 @@ function ComingSoonSection({ title }: { title: string }) {
   );
 }
 
+// ─── Dues Dashboard Section ───────────────────────────────────────────────────
+
+function DuesDashboardSection({ cooperativeId }: { cooperativeId: string }) {
+  const { data: summary, isLoading } =
+    useManagerDueDashboardSummary(cooperativeId);
+
+  return (
+    <DuesDashboardWidget
+      cooperativeId={cooperativeId}
+      summary={summary}
+      isLoading={isLoading}
+      viewAllLink="/manager/dues"
+      createLink="/manager/dues"
+      portalColor="#1BAFD6"
+    />
+  );
+}
+
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function ManagerDashboard() {
@@ -429,7 +448,7 @@ export default function ManagerDashboard() {
 
   return (
     <ManagerLayout>
-      <div className="font-['Albert_Sans',sans-serif] p-6 space-y-8">
+      <div className="font-['Albert_Sans',sans-serif] py-6 px-8 space-y-8">
         {/* Section 1: Summary */}
         <section>
           <p className="text-[16px] font-semibold text-[#101828] mb-3">
@@ -445,7 +464,7 @@ export default function ManagerDashboard() {
 
         {/* Section 3: Dues & Levies */}
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <ComingSoonSection title="Dues" />
+          <DuesDashboardSection cooperativeId={cooperativeId} />
           <ComingSoonSection title="Levies" />
         </section>
 
