@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router";
+import AdminDues from "./AdminDues";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Users, UserCog, Wallet, X } from "lucide-react";
 import AdminLayout from "../../components/AdminLayout";
@@ -31,7 +32,7 @@ type Tab = "overview" | "dues" | "levies" | "managers" | "members";
 
 const NAV_ITEMS: { key: Tab; label: string; comingSoon?: boolean }[] = [
   { key: "overview", label: "Overview" },
-  { key: "dues", label: "Dues", comingSoon: true },
+  { key: "dues", label: "Dues" },
   { key: "levies", label: "Levies", comingSoon: true },
   { key: "managers", label: "Managers" },
   { key: "members", label: "Members" },
@@ -957,6 +958,11 @@ export default function AdminCooperativeDetail() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Dues */}
+            {activeTab === "dues" && cooperativeId && (
+              <AdminDues cooperativeId={cooperativeId} />
             )}
 
             {/* Members */}

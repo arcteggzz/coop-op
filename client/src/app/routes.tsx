@@ -8,6 +8,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCooperatives from "./pages/admin/AdminCooperatives";
 import AdminCooperativeDetail from "./pages/admin/AdminCooperativeDetail";
 import AdminManagement from "./pages/admin/AdminManagement";
+import AdminDuesPage from "./pages/admin/AdminDuesPage";
+import AdminDueScheduleDetail from "./pages/admin/AdminDueScheduleDetail";
 import PlaceholderPage from "./pages/admin/PlaceholderPage";
 
 // Manager
@@ -16,6 +18,8 @@ import ManagerChangePassword from "./pages/manager/ManagerChangePassword";
 import ManagerDashboard from "./pages/manager/ManagerDashboard";
 import ManagerManagers from "./pages/manager/ManagerManagers";
 import ManagerMembers from "./pages/manager/ManagerMembers";
+import ManagerDues from "./pages/manager/ManagerDues";
+import ManagerDueScheduleDetail from "./pages/manager/ManagerDueScheduleDetail";
 import ManagerPlaceholderPage from "./pages/manager/ManagerPlaceholderPage";
 
 // Member
@@ -23,6 +27,7 @@ import MemberLogin from "./pages/member/MemberLogin";
 import MemberChangePassword from "./pages/member/MemberChangePassword";
 import MemberDashboard from "./pages/member/MemberDashboard";
 import MemberTransactions from "./pages/member/MemberTransactions";
+import MemberDues from "./pages/member/MemberDues";
 import MemberPlaceholderPage from "./pages/member/MemberPlaceholderPage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -77,6 +82,14 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: "/admin/cooperatives/:cooperativeId/dues/:scheduleId",
+    element: (
+      <ProtectedRoute userType="admin">
+        <AdminDueScheduleDetail />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "/admin/admin-management",
     element: (
       <ProtectedRoute userType="admin">
@@ -96,7 +109,7 @@ export const router = createBrowserRouter([
     path: "/admin/dues",
     element: (
       <ProtectedRoute userType="admin">
-        <PlaceholderPage title="Dues" />
+        <AdminDuesPage />
       </ProtectedRoute>
     ),
   },
@@ -146,7 +159,15 @@ export const router = createBrowserRouter([
     path: "/manager/dues",
     element: (
       <ProtectedRoute userType="manager">
-        <ManagerPlaceholderPage title="Dues" />
+        <ManagerDues />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/manager/dues/:scheduleId",
+    element: (
+      <ProtectedRoute userType="manager">
+        <ManagerDueScheduleDetail />
       </ProtectedRoute>
     ),
   },
@@ -180,7 +201,7 @@ export const router = createBrowserRouter([
     path: "/member/dues",
     element: (
       <ProtectedRoute userType="member">
-        <MemberPlaceholderPage title="Dues" />
+        <MemberDues />
       </ProtectedRoute>
     ),
   },
