@@ -137,17 +137,11 @@ app.use(
   "/api/management/cooperatives/:cooperativeId/members",
   managementMembersRoutes,
 );
-app.use(
-  "/api/management/cooperatives/:cooperativeId",
-  managerDashboardRoutes,
-);
+app.use("/api/management/cooperatives/:cooperativeId", managerDashboardRoutes);
 app.use("/api/member", memberAuthRoutes);
 // Dues routes — overview must be before the cooperativeId-scoped route
 app.use("/api/coop-admin/dues", coopDuesOverviewRoutes);
-app.use(
-  "/api/coop-admin/cooperatives/:cooperativeId/dues",
-  coopDuesRoutes,
-);
+app.use("/api/coop-admin/cooperatives/:cooperativeId/dues", coopDuesRoutes);
 app.use("/api/management/dues/:cooperativeId", managementDuesRoutes);
 app.use("/api/member/dues/:cooperativeId", memberDuesRoutes);
 

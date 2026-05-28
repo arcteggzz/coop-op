@@ -147,7 +147,10 @@ export async function listDueSchedules(
     "Repository: listDueSchedules",
   );
   const offset = (page - 1) * pageSize;
-  const conditions: string[] = ["ds.CooperativeId = ?", "ds.DateDeleted IS NULL"];
+  const conditions: string[] = [
+    "ds.CooperativeId = ?",
+    "ds.DateDeleted IS NULL",
+  ];
   const params: (string | number | null)[] = [cooperativeId];
 
   if (isActive !== undefined) {

@@ -112,10 +112,10 @@ export async function createDueSchedule(
   baseUrl: string,
   dto: CreateDueScheduleDto,
 ): Promise<DueSchedule> {
-  const res = await axiosInstance.post<{ success: boolean; data: { schedule: DueSchedule } }>(
-    `${baseUrl}/schedules`,
-    dto,
-  );
+  const res = await axiosInstance.post<{
+    success: boolean;
+    data: { schedule: DueSchedule };
+  }>(`${baseUrl}/schedules`, dto);
   return res.data.data.schedule;
 }
 
@@ -123,10 +123,10 @@ export async function listDueSchedules(
   baseUrl: string,
   params?: { page?: number; pageSize?: number; isActive?: boolean },
 ): Promise<PaginatedResult<DueSchedule>> {
-  const res = await axiosInstance.get<{ success: boolean; data: PaginatedResult<DueSchedule> }>(
-    `${baseUrl}/schedules`,
-    { params },
-  );
+  const res = await axiosInstance.get<{
+    success: boolean;
+    data: PaginatedResult<DueSchedule>;
+  }>(`${baseUrl}/schedules`, { params });
   return res.data.data;
 }
 
@@ -134,9 +134,10 @@ export async function getDueSchedule(
   baseUrl: string,
   scheduleId: string,
 ): Promise<DueSchedule> {
-  const res = await axiosInstance.get<{ success: boolean; data: { schedule: DueSchedule } }>(
-    `${baseUrl}/schedules/${scheduleId}`,
-  );
+  const res = await axiosInstance.get<{
+    success: boolean;
+    data: { schedule: DueSchedule };
+  }>(`${baseUrl}/schedules/${scheduleId}`);
   return res.data.data.schedule;
 }
 
@@ -145,10 +146,10 @@ export async function updateDueSchedule(
   scheduleId: string,
   dto: UpdateDueScheduleDto,
 ): Promise<DueSchedule> {
-  const res = await axiosInstance.patch<{ success: boolean; data: { schedule: DueSchedule } }>(
-    `${baseUrl}/schedules/${scheduleId}`,
-    dto,
-  );
+  const res = await axiosInstance.patch<{
+    success: boolean;
+    data: { schedule: DueSchedule };
+  }>(`${baseUrl}/schedules/${scheduleId}`, dto);
   return res.data.data.schedule;
 }
 
@@ -163,10 +164,20 @@ export async function issueDues(
   baseUrl: string,
   scheduleId: string,
   dto: IssueDuesDto,
-): Promise<{ periodLabel: string; dueDate: string; amount: number; membersIssued: number }> {
+): Promise<{
+  periodLabel: string;
+  dueDate: string;
+  amount: number;
+  membersIssued: number;
+}> {
   const res = await axiosInstance.post<{
     success: boolean;
-    data: { periodLabel: string; dueDate: string; amount: number; membersIssued: number };
+    data: {
+      periodLabel: string;
+      dueDate: string;
+      amount: number;
+      membersIssued: number;
+    };
   }>(`${baseUrl}/schedules/${scheduleId}/issue`, dto);
   return res.data.data;
 }
@@ -182,10 +193,10 @@ export async function listDuePayments(
     status?: string;
   },
 ): Promise<PaginatedResult<DuePayment>> {
-  const res = await axiosInstance.get<{ success: boolean; data: PaginatedResult<DuePayment> }>(
-    `${baseUrl}/payments`,
-    { params },
-  );
+  const res = await axiosInstance.get<{
+    success: boolean;
+    data: PaginatedResult<DuePayment>;
+  }>(`${baseUrl}/payments`, { params });
   return res.data.data;
 }
 
@@ -193,10 +204,22 @@ export async function recordDuePayment(
   baseUrl: string,
   paymentId: string,
   dto: RecordPaymentDto,
-): Promise<{ id: string; memberId: string; periodLabel: string; status: string; paidAmount: number }> {
+): Promise<{
+  id: string;
+  memberId: string;
+  periodLabel: string;
+  status: string;
+  paidAmount: number;
+}> {
   const res = await axiosInstance.patch<{
     success: boolean;
-    data: { id: string; memberId: string; periodLabel: string; status: string; paidAmount: number };
+    data: {
+      id: string;
+      memberId: string;
+      periodLabel: string;
+      status: string;
+      paidAmount: number;
+    };
   }>(`${baseUrl}/payments/${paymentId}/record`, dto);
   return res.data.data;
 }
@@ -205,7 +228,12 @@ export async function waiveDuePayment(
   baseUrl: string,
   paymentId: string,
   dto: WaivePaymentDto,
-): Promise<{ id: string; memberId: string; periodLabel: string; status: string }> {
+): Promise<{
+  id: string;
+  memberId: string;
+  periodLabel: string;
+  status: string;
+}> {
   const res = await axiosInstance.patch<{
     success: boolean;
     data: { id: string; memberId: string; periodLabel: string; status: string };
@@ -233,15 +261,21 @@ export async function getAllDueSchedules(params?: {
 export async function getMemberDueSchedules(
   cooperativeId: string,
 ): Promise<{ data: DueSchedule[] }> {
-  const res = await axiosInstance.get<{ success: boolean; data: { data: DueSchedule[] } }>(
-    `/api/member/dues/${cooperativeId}/schedules`,
-  );
+  const res = await axiosInstance.get<{
+    success: boolean;
+    data: { data: DueSchedule[] };
+  }>(`/api/member/dues/${cooperativeId}/schedules`);
   return res.data.data;
 }
 
 export async function getMemberDuePayments(
   cooperativeId: string,
-  params?: { page?: number; pageSize?: number; scheduleId?: string; status?: string },
+  params?: {
+    page?: number;
+    pageSize?: number;
+    scheduleId?: string;
+    status?: string;
+  },
 ): Promise<PaginatedResult<MemberDuePayment>> {
   const res = await axiosInstance.get<{
     success: boolean;
@@ -263,10 +297,22 @@ export async function getMemberOutstandingDues(
 export async function payMemberDue(
   cooperativeId: string,
   paymentId: string,
-): Promise<{ id: string; periodLabel: string; status: string; paidDate: string; paidAmount: number }> {
+): Promise<{
+  id: string;
+  periodLabel: string;
+  status: string;
+  paidDate: string;
+  paidAmount: number;
+}> {
   const res = await axiosInstance.post<{
     success: boolean;
-    data: { id: string; periodLabel: string; status: string; paidDate: string; paidAmount: number };
+    data: {
+      id: string;
+      periodLabel: string;
+      status: string;
+      paidDate: string;
+      paidAmount: number;
+    };
   }>(`/api/member/dues/${cooperativeId}/payments/${paymentId}/pay`);
   return res.data.data;
 }

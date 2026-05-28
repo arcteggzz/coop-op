@@ -11,7 +11,10 @@ export async function listDueSchedules(
 ): Promise<void> {
   try {
     const { cooperativeId } = req.params as { cooperativeId: string };
-    logger.info({ cooperativeId }, "Controller: GET /member/dues/:cooperativeId/schedules");
+    logger.info(
+      { cooperativeId },
+      "Controller: GET /member/dues/:cooperativeId/schedules",
+    );
 
     const result = await service.listMemberDueSchedules(cooperativeId);
     res.status(200).json({ success: true, data: result });
@@ -42,7 +45,12 @@ export async function listDuePayments(
       status: req.query["status"] as string | undefined,
     };
 
-    const result = await service.listMemberDuePayments(memberUser.id, cooperativeId, filters, { page, pageSize });
+    const result = await service.listMemberDuePayments(
+      memberUser.id,
+      cooperativeId,
+      filters,
+      { page, pageSize },
+    );
     res.status(200).json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -63,7 +71,10 @@ export async function listOutstandingPayments(
       "Controller: GET /member/dues/:cooperativeId/payments/outstanding",
     );
 
-    const result = await service.listMemberOutstandingPayments(memberUser.id, cooperativeId);
+    const result = await service.listMemberOutstandingPayments(
+      memberUser.id,
+      cooperativeId,
+    );
     res.status(200).json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -87,7 +98,11 @@ export async function payFromWallet(
       "Controller: POST /member/dues/:cooperativeId/payments/:paymentId/pay",
     );
 
-    const result = await service.payDueFromWallet(memberUser.id, cooperativeId, paymentId);
+    const result = await service.payDueFromWallet(
+      memberUser.id,
+      cooperativeId,
+      paymentId,
+    );
     res.status(200).json({ success: true, data: result });
   } catch (err) {
     next(err);

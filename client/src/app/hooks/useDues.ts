@@ -35,7 +35,9 @@ export function useCreateDueSchedule(baseUrl: string, cooperativeId: string) {
     mutationFn: (dto: api.CreateDueScheduleDto) =>
       api.createDueSchedule(baseUrl, dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["due-schedules", baseUrl, cooperativeId] });
+      queryClient.invalidateQueries({
+        queryKey: ["due-schedules", baseUrl, cooperativeId],
+      });
       toast.success("Due schedule created successfully.");
     },
     onError: (err) => {
@@ -47,10 +49,17 @@ export function useCreateDueSchedule(baseUrl: string, cooperativeId: string) {
 export function useUpdateDueSchedule(baseUrl: string, cooperativeId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ scheduleId, dto }: { scheduleId: string; dto: api.UpdateDueScheduleDto }) =>
-      api.updateDueSchedule(baseUrl, scheduleId, dto),
+    mutationFn: ({
+      scheduleId,
+      dto,
+    }: {
+      scheduleId: string;
+      dto: api.UpdateDueScheduleDto;
+    }) => api.updateDueSchedule(baseUrl, scheduleId, dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["due-schedules", baseUrl, cooperativeId] });
+      queryClient.invalidateQueries({
+        queryKey: ["due-schedules", baseUrl, cooperativeId],
+      });
     },
     onError: (err) => {
       toast.error(getErrorMessage(err));
@@ -64,7 +73,9 @@ export function useDeleteDueSchedule(baseUrl: string, cooperativeId: string) {
     mutationFn: (scheduleId: string) =>
       api.deleteDueSchedule(baseUrl, scheduleId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["due-schedules", baseUrl, cooperativeId] });
+      queryClient.invalidateQueries({
+        queryKey: ["due-schedules", baseUrl, cooperativeId],
+      });
       toast.success("Due schedule deleted.");
     },
     onError: (err) => {
@@ -83,8 +94,12 @@ export function useIssueDues(
     mutationFn: (dto: api.IssueDuesDto) =>
       api.issueDues(baseUrl, scheduleId, dto),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["due-payments", baseUrl, cooperativeId] });
-      toast.success(`Dues issued for "${data.periodLabel}" — ${data.membersIssued} members.`);
+      queryClient.invalidateQueries({
+        queryKey: ["due-payments", baseUrl, cooperativeId],
+      });
+      toast.success(
+        `Dues issued for "${data.periodLabel}" — ${data.membersIssued} members.`,
+      );
     },
     onError: (err) => {
       toast.error(getErrorMessage(err));
@@ -114,10 +129,17 @@ export function useDuePayments(
 export function useRecordDuePayment(baseUrl: string, cooperativeId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ paymentId, dto }: { paymentId: string; dto: api.RecordPaymentDto }) =>
-      api.recordDuePayment(baseUrl, paymentId, dto),
+    mutationFn: ({
+      paymentId,
+      dto,
+    }: {
+      paymentId: string;
+      dto: api.RecordPaymentDto;
+    }) => api.recordDuePayment(baseUrl, paymentId, dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["due-payments", baseUrl, cooperativeId] });
+      queryClient.invalidateQueries({
+        queryKey: ["due-payments", baseUrl, cooperativeId],
+      });
       toast.success("Payment recorded.");
     },
     onError: (err) => {
@@ -129,10 +151,17 @@ export function useRecordDuePayment(baseUrl: string, cooperativeId: string) {
 export function useWaiveDuePayment(baseUrl: string, cooperativeId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ paymentId, dto }: { paymentId: string; dto: api.WaivePaymentDto }) =>
-      api.waiveDuePayment(baseUrl, paymentId, dto),
+    mutationFn: ({
+      paymentId,
+      dto,
+    }: {
+      paymentId: string;
+      dto: api.WaivePaymentDto;
+    }) => api.waiveDuePayment(baseUrl, paymentId, dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["due-payments", baseUrl, cooperativeId] });
+      queryClient.invalidateQueries({
+        queryKey: ["due-payments", baseUrl, cooperativeId],
+      });
       toast.success("Payment waived.");
     },
     onError: (err) => {
@@ -167,7 +196,12 @@ export function useMemberDueSchedules(cooperativeId: string) {
 
 export function useMemberDuePayments(
   cooperativeId: string,
-  params?: { page?: number; pageSize?: number; scheduleId?: string; status?: string },
+  params?: {
+    page?: number;
+    pageSize?: number;
+    scheduleId?: string;
+    status?: string;
+  },
 ) {
   return useQuery({
     queryKey: ["member-due-payments", cooperativeId, params],
@@ -187,10 +221,15 @@ export function useMemberOutstandingDues(cooperativeId: string) {
 export function usePayMemberDue(cooperativeId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (paymentId: string) => api.payMemberDue(cooperativeId, paymentId),
+    mutationFn: (paymentId: string) =>
+      api.payMemberDue(cooperativeId, paymentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["member-outstanding-dues", cooperativeId] });
-      queryClient.invalidateQueries({ queryKey: ["member-due-payments", cooperativeId] });
+      queryClient.invalidateQueries({
+        queryKey: ["member-outstanding-dues", cooperativeId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["member-due-payments", cooperativeId],
+      });
       toast.success("Payment successful.");
     },
     onError: (err) => {
