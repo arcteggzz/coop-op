@@ -10,6 +10,7 @@ import { embedlyRequest } from "../utils/embedlyClient";
 import * as repo from "../repositories/dues.repository";
 import * as cooperativeRepo from "../repositories/cooperatives.repository";
 import * as embedlyRepo from "../repositories/embedly.repository";
+import * as embedlyTransactionRepo from "../repositories/embedlyTransaction.repository";
 
 // Strips ISO timestamp down to YYYY-MM-DD for MySQL DATE columns
 function toDateOnly(d: string): string {
@@ -539,13 +540,27 @@ export async function payDueFromWallet(
 
   const dueAccountNumber = payment.DueAccountNumber ?? "";
 
+  const remarks = `Due payment: ${payment.PeriodLabel}`;
+  const txRef = `COOP-DUES-${paymentId}`;
+
   // Execute wallet-to-wallet transfer
-  await embedlyRequest("POST", env.embedly.urls.walletToWallet, {
-    sourceAccountNumber: memberWallet.AccountNumber,
-    beneficiaryAccountNumber: dueAccountNumber,
+  await embedlyRequest("PUT", env.embedly.urls.walletToWallet, {
+    fromAccount: memberWallet.AccountNumber,
+    toAccount: dueAccountNumber,
     amount: amountToPay,
-    narration: `Due payment: ${payment.PeriodLabel}`,
+    transactionReference: txRef,
+    remarks,
   });
+
+  // SAVE TRANSACTION RECORD
+  await embedlyTransactionRepo.saveEmbedlyTransaction(
+    memberWallet.AccountNumber,
+    dueAccountNumber,
+    amountToPay,
+    txRef,
+    true,
+    "WalletToWallet",
+  );
 
   logger.info(
     { paymentId, memberId, amount: amountToPay },
@@ -570,6 +585,191 @@ export async function payDueFromWallet(
     status: "Paid",
     paidDate: now,
     paidAmount: amountToPay,
+  };
+}
+
+// ─── Dashboard summary ────────────────────────────────────────────────────────
+
+export async function getDueDashboardSummary(
+  cooperativeId: string,
+  memberId?: string,
+) {
+  logger.info({ cooperativeId, memberId }, "Service: getDueDashboardSummary");
+
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  logger.info({ todayStr }, "Today's date string");
+
+  const allSchedules = await repo.listActiveDueSchedules(cooperativeId);
+
+  const toScheduleDateStr = (d: unknown): string =>
+    (d instanceof Date ? d : new Date(d as string)).toISOString().split("T")[0];
+
+  logger.info(
+    {
+      allSchedules: allSchedules.map((s) => {
+        return {
+          Id: s.Id,
+          Name: s.Name,
+          Amount: s.Amount,
+          StartDate: s.StartDate,
+          startDateIsGreaterThanToday:
+            toScheduleDateStr(s.StartDate) > todayStr,
+        };
+      }),
+    },
+    "All Schedules",
+  );
+
+  const activeSchedules = allSchedules.filter(
+    (s) => toScheduleDateStr(s.StartDate) <= todayStr,
+  );
+  const upcomingSchedules = allSchedules.filter(
+    (s) => toScheduleDateStr(s.StartDate) > todayStr,
+  );
+
+  logger.info({ upcomingSchedules }, "Upcoming Schedules");
+  logger.info({ activeSchedules }, "Active Schedules");
+
+  const activeDues = await Promise.all(
+    activeSchedules.map(async (schedule) => {
+      const periodStats = await repo.getLatestPeriodStats(
+        schedule.Id,
+        cooperativeId,
+      );
+
+      let memberStatus: "paid" | "unpaid" | undefined;
+      if (memberId && periodStats) {
+        const mp = await repo.getMemberPaymentStatusForPeriod(
+          schedule.Id,
+          memberId,
+          periodStats.PeriodLabel,
+        );
+        if (mp) {
+          memberStatus =
+            mp.Status === "Paid" || mp.Status === "Waived" ? "paid" : "unpaid";
+        }
+      }
+
+      const totalExpected = periodStats ? Number(periodStats.totalExpected) : 0;
+      const totalCollected = periodStats
+        ? Number(periodStats.totalCollected)
+        : 0;
+      const paidOrWaivedCount = periodStats
+        ? Number(periodStats.paidOrWaivedCount)
+        : 0;
+      const unpaidCount = periodStats ? Number(periodStats.unpaidCount) : 0;
+
+      let daysLeft: number | null = null;
+      let cycleStart: string | null = null;
+      let cycleEnd: string | null = null;
+
+      if (periodStats) {
+        cycleStart = periodStats.cycleStart
+          ? toScheduleDateStr(periodStats.cycleStart)
+          : null;
+        cycleEnd = periodStats.cycleEnd
+          ? toScheduleDateStr(periodStats.cycleEnd)
+          : null;
+        if (cycleEnd) {
+          const end = new Date(cycleEnd);
+          daysLeft = Math.ceil(
+            (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+          );
+        }
+      }
+
+      const percentageCollected =
+        totalExpected > 0
+          ? Math.round((totalCollected / totalExpected) * 100)
+          : 0;
+
+      return {
+        dueId: schedule.Id,
+        name: schedule.Name,
+        amount: Number(schedule.Amount),
+        cycleStart,
+        cycleEnd,
+        daysLeft,
+        paidCount: paidOrWaivedCount,
+        unpaidCount,
+        totalExpected,
+        totalCollected,
+        percentageCollected,
+        ...(memberId !== undefined
+          ? { memberStatus: memberStatus ?? null }
+          : {}),
+      };
+    }),
+  );
+
+  const activeMembersForCoop =
+    upcomingSchedules.length > 0
+      ? await repo.fetchActiveMembersForCooperative(cooperativeId)
+      : [];
+  const memberCount = activeMembersForCoop.length;
+
+  const upcomingDues = upcomingSchedules.map((schedule) => {
+    const start = new Date(schedule.StartDate);
+    const daysUntilStart = Math.ceil(
+      (start.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    return {
+      dueId: schedule.Id,
+      name: schedule.Name,
+      amount: Number(schedule.Amount),
+      startDate: schedule.StartDate,
+      daysUntilStart,
+      memberCount,
+    };
+  });
+
+  logger.info({ upcomingDues }, "Upcoming dues");
+  logger.info({ activeDues }, "Active dues");
+
+  let state: "active" | "upcoming" | "mixed" | "all_paid" | "no_dues";
+  if (activeDues.length === 0 && upcomingDues.length === 0) {
+    state = "no_dues";
+  } else if (activeDues.length === 0) {
+    state = "upcoming";
+  } else if (upcomingDues.length > 0) {
+    state = "mixed";
+  } else {
+    const allPaid = activeDues.every(
+      (d) => d.unpaidCount === 0 && d.paidCount > 0,
+    );
+    state = allPaid ? "all_paid" : "active";
+  }
+
+  const totalExpected = activeDues.reduce((sum, d) => sum + d.totalExpected, 0);
+  const totalCollected = activeDues.reduce(
+    (sum, d) => sum + d.totalCollected,
+    0,
+  );
+  const totalMembersBehind = activeDues.reduce(
+    (sum, d) => sum + d.unpaidCount,
+    0,
+  );
+
+  const now = new Date();
+  const cycleLabel = now.toLocaleString("en-NG", {
+    month: "long",
+    year: "numeric",
+  });
+
+  return {
+    cooperativeId,
+    cycleLabel,
+    state,
+    aggregates: {
+      totalExpected,
+      totalCollected,
+      totalMembersBehind,
+      activeDuesCount: activeDues.length,
+      upcomingDuesCount: upcomingDues.length,
+    },
+    activeDues,
+    upcomingDues,
   };
 }
 

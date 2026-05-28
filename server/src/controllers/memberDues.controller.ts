@@ -81,6 +81,30 @@ export async function listOutstandingPayments(
   }
 }
 
+// ─── GET /api/member/dues/:cooperativeId/dashboard-summary ───────────────────
+export async function getDashboardSummary(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { cooperativeId } = req.params as { cooperativeId: string };
+    const { memberUser } = req as AuthMemberRequest;
+    logger.info(
+      { cooperativeId, memberId: memberUser.id },
+      "Controller: GET /member/dues/:cooperativeId/dashboard-summary",
+    );
+
+    const result = await service.getDueDashboardSummary(
+      cooperativeId,
+      memberUser.id,
+    );
+    res.status(200).json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ─── POST /api/member/dues/:cooperativeId/payments/:paymentId/pay ─────────────
 export async function payFromWallet(
   req: Request,

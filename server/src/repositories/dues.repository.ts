@@ -529,7 +529,7 @@ export async function updateDuePayment(
   }
   if (fields.paidDate !== undefined) {
     sets.push("PaidDate = ?");
-    params.push(fields.paidDate);
+    params.push(fields.paidDate.replace("T", " ").replace("Z", "").split(".")[0]);
   }
   if (fields.paidAmount !== undefined) {
     sets.push("PaidAmount = ?");
@@ -659,4 +659,85 @@ export async function listMemberOutstandingPayments(
     [memberId, cooperativeId],
   );
   return rows;
+}
+
+// ─── Dashboard Summary queries ────────────────────────────────────────────────
+
+export async function listActiveDueSchedules(
+  cooperativeId: string,
+): Promise<DueScheduleRow[]> {
+  logger.info({ cooperativeId }, "Repository: listActiveDueSchedules");
+  const [rows] = await pool.execute<DueScheduleRow[]>(
+    `SELECT * FROM DueSchedules
+     WHERE CooperativeId = ? AND IsActive = 1 AND DateDeleted IS NULL
+       AND (EndDate IS NULL OR EndDate >= CURDATE())
+     ORDER BY StartDate ASC`,
+    [cooperativeId],
+  );
+  return rows;
+}
+
+export interface PeriodStatsRow extends RowDataPacket {
+  PeriodLabel: string;
+  cycleStart: string;
+  cycleEnd: string;
+  totalExpected: number;
+  totalCollected: number;
+  paidOrWaivedCount: number;
+  unpaidCount: number;
+  totalCount: number;
+}
+
+export async function getLatestPeriodStats(
+  scheduleId: string,
+  cooperativeId: string,
+): Promise<PeriodStatsRow | null> {
+  logger.info(
+    { scheduleId, cooperativeId },
+    "Repository: getLatestPeriodStats",
+  );
+  const [rows] = await pool.execute<PeriodStatsRow[]>(
+    `SELECT
+       PeriodLabel,
+       MIN(DueDate) AS cycleStart,
+       MAX(DueDate) AS cycleEnd,
+       SUM(Amount) AS totalExpected,
+       SUM(CASE WHEN Status = 'Paid' THEN COALESCE(PaidAmount, Amount) ELSE 0 END) AS totalCollected,
+       COUNT(CASE WHEN Status IN ('Paid', 'Waived') THEN 1 END) AS paidOrWaivedCount,
+       COUNT(CASE WHEN Status IN ('Pending', 'Overdue') THEN 1 END) AS unpaidCount,
+       COUNT(*) AS totalCount
+     FROM DuePayments
+     WHERE DueScheduleId = ? AND CooperativeId = ?
+       AND PeriodLabel = (
+         SELECT PeriodLabel FROM DuePayments
+         WHERE DueScheduleId = ? AND CooperativeId = ?
+         ORDER BY DueDate DESC LIMIT 1
+       )
+     GROUP BY PeriodLabel`,
+    [scheduleId, cooperativeId, scheduleId, cooperativeId],
+  );
+  return rows.length > 0 ? rows[0] : null;
+}
+
+export interface MemberPaymentStatusRow extends RowDataPacket {
+  Status: string;
+  PaidDate: Date | null;
+}
+
+export async function getMemberPaymentStatusForPeriod(
+  scheduleId: string,
+  memberId: string,
+  periodLabel: string,
+): Promise<MemberPaymentStatusRow | null> {
+  logger.info(
+    { scheduleId, memberId, periodLabel },
+    "Repository: getMemberPaymentStatusForPeriod",
+  );
+  const [rows] = await pool.execute<MemberPaymentStatusRow[]>(
+    `SELECT Status, PaidDate FROM DuePayments
+     WHERE DueScheduleId = ? AND MemberId = ? AND PeriodLabel = ?
+     LIMIT 1`,
+    [scheduleId, memberId, periodLabel],
+  );
+  return rows.length > 0 ? rows[0] : null;
 }

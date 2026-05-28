@@ -19,6 +19,36 @@ router.use(requireAdminAuth);
 
 /**
  * @swagger
+ * /api/coop-admin/cooperatives/{cooperativeId}/dues/dashboard-summary:
+ *   get:
+ *     summary: Get the dues dashboard summary for a cooperative
+ *     tags: [CoopDues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cooperativeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: memberId
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Include per-member payment status for this member
+ *     responses:
+ *       200:
+ *         description: Dues dashboard summary with state, aggregates, activeDues, and upcomingDues
+ */
+router.get(
+  "/dashboard-summary",
+  requireAdminPermission("CoopDuesRead"),
+  controller.getDashboardSummary,
+);
+
+/**
+ * @swagger
  * /api/coop-admin/cooperatives/{cooperativeId}/dues/schedules:
  *   post:
  *     summary: Create a due schedule for a cooperative

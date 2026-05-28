@@ -235,6 +235,27 @@ export async function waivePayment(
   }
 }
 
+// ─── GET /api/coop-admin/cooperatives/:cooperativeId/dues/dashboard-summary ────
+export async function getDashboardSummary(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { cooperativeId } = req.params as { cooperativeId: string };
+    logger.info(
+      { cooperativeId },
+      "Controller: GET /cooperatives/:cooperativeId/dues/dashboard-summary",
+    );
+
+    const memberId = req.query["memberId"] as string | undefined;
+    const result = await service.getDueDashboardSummary(cooperativeId, memberId);
+    res.status(200).json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ─── GET /api/coop-admin/dues (global overview — all cooperatives) ─────────────
 export async function listAllDueSchedules(
   req: Request,

@@ -19,6 +19,26 @@ router.use(requireMemberAuth, requireMemberCooperativeAccess);
 
 /**
  * @swagger
+ * /api/member/dues/{cooperativeId}/dashboard-summary:
+ *   get:
+ *     summary: Get the dues dashboard summary for the calling member
+ *     tags: [MemberDues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cooperativeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Dues dashboard summary including memberStatus per active due
+ */
+router.get("/dashboard-summary", controller.getDashboardSummary);
+
+/**
+ * @swagger
  * /api/member/dues/{cooperativeId}/schedules:
  *   get:
  *     summary: List active due schedules for the cooperative

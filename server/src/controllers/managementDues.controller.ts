@@ -208,6 +208,27 @@ export async function recordPayment(
   }
 }
 
+// ─── GET /api/management/dues/:cooperativeId/dashboard-summary ────────────────
+export async function getDashboardSummary(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { cooperativeId } = req.params as { cooperativeId: string };
+    logger.info(
+      { cooperativeId },
+      "Controller: GET /management/dues/:cooperativeId/dashboard-summary",
+    );
+
+    const memberId = req.query["memberId"] as string | undefined;
+    const result = await service.getDueDashboardSummary(cooperativeId, memberId);
+    res.status(200).json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ─── PATCH /api/management/dues/:cooperativeId/payments/:paymentId/waive ──────
 export async function waivePayment(
   req: Request,
