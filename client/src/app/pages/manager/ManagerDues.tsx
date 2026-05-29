@@ -14,6 +14,7 @@ import {
 } from "../../hooks/useDues";
 import type { DueSchedule, CreateDueScheduleDto } from "../../api/dues.api";
 import { formatDateTime } from "../../utils/formatDate";
+import DuesHelperModal from "../../components/DuesHelperModal";
 
 function formatDateOnly(d: string | null | undefined) {
   if (!d) return "—";
@@ -270,6 +271,7 @@ export default function ManagerDues() {
   const { can } = useManagerPermissions();
   const canWrite = can("ManagementDuesWrite");
 
+  const [showDuesHelper, setShowDuesHelper] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DueSchedule | null>(null);
 
@@ -295,7 +297,7 @@ export default function ManagerDues() {
           <h1 className="text-[22px] font-bold text-[#101828]">Dues</h1>
           {canWrite && (
             <button
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => setShowDuesHelper(true)}
               className="px-4 py-2 rounded-[10px] text-[13px] font-semibold text-white bg-[#0D8FAF] hover:bg-[#066E86] transition-colors cursor-pointer flex items-center gap-1.5"
             >
               <Plus size={14} /> Create Due
@@ -389,6 +391,12 @@ export default function ManagerDues() {
             </table>
           </div>
         </div>
+
+        <DuesHelperModal
+          isOpen={showDuesHelper}
+          onClose={() => setShowDuesHelper(false)}
+          onProceed={() => { setShowDuesHelper(false); setShowCreateModal(true); }}
+        />
 
         {showCreateModal && (
           <CreateDueModal baseUrl={baseUrl} cooperativeId={cooperativeId} onClose={() => setShowCreateModal(false)} />

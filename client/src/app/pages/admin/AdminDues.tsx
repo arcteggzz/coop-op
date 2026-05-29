@@ -14,6 +14,7 @@ import type {
   CreateDueScheduleDto,
 } from "../../api/dues.api";
 import { formatDateTime } from "../../utils/formatDate";
+import DuesHelperModal from "../../components/DuesHelperModal";
 
 function formatDateOnly(d: string | null | undefined) {
   if (!d) return "—";
@@ -266,6 +267,7 @@ function DeleteScheduleModal({
 export default function AdminDues({ cooperativeId }: { cooperativeId: string }) {
   const baseUrl = `/api/coop-admin/cooperatives/${cooperativeId}/dues`;
 
+  const [showDuesHelper, setShowDuesHelper] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DueSchedule | null>(null);
 
@@ -284,7 +286,7 @@ export default function AdminDues({ cooperativeId }: { cooperativeId: string }) 
           {schedules.length} schedule{schedules.length !== 1 ? "s" : ""}
         </p>
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={() => setShowDuesHelper(true)}
           className="px-4 py-2 rounded-[10px] text-[13px] font-semibold text-white bg-gradient-to-r from-[#dc2626] to-[#b91c1c] hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-1.5"
         >
           <Plus size={14} /> Create Due
@@ -370,6 +372,13 @@ export default function AdminDues({ cooperativeId }: { cooperativeId: string }) 
           </table>
         </div>
       </div>
+
+      <DuesHelperModal
+        isOpen={showDuesHelper}
+        onClose={() => setShowDuesHelper(false)}
+        onProceed={() => { setShowDuesHelper(false); setShowCreateModal(true); }}
+        primaryColor="#dc2626"
+      />
 
       {showCreateModal && (
         <CreateDueModal
