@@ -241,6 +241,23 @@ export async function waiveDuePayment(
   return res.data.data;
 }
 
+export interface MemberScheduleSummary {
+  summary: { totalPaid: number; totalOwed: number; cyclesEnrolled: number };
+  payments: DuePayment[];
+}
+
+export async function getMemberScheduleSummary(
+  baseUrl: string,
+  scheduleId: string,
+  memberId: string,
+): Promise<MemberScheduleSummary> {
+  const res = await axiosInstance.get<{
+    success: boolean;
+    data: MemberScheduleSummary;
+  }>(`${baseUrl}/schedules/${scheduleId}/member-summary/${memberId}`);
+  return res.data.data;
+}
+
 // ─── Admin global overview ────────────────────────────────────────────────────
 
 export async function getAllDueSchedules(params?: {
@@ -364,9 +381,7 @@ export async function getAdminDueDashboardSummary(
   const res = await axiosInstance.get<{
     success: boolean;
     data: DueDashboardSummary;
-  }>(
-    `/api/coop-admin/cooperatives/${cooperativeId}/dues/dashboard-summary`,
-  );
+  }>(`/api/coop-admin/cooperatives/${cooperativeId}/dues/dashboard-summary`);
   return res.data.data;
 }
 

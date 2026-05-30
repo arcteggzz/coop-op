@@ -359,6 +359,41 @@ export async function waiveDuePayment(
   };
 }
 
+// ─── Payments: member schedule summary ───────────────────────────────────────
+
+export async function getMemberScheduleSummary(
+  cooperativeId: string,
+  scheduleId: string,
+  memberId: string,
+) {
+  logger.info(
+    { cooperativeId, scheduleId, memberId },
+    "Service: getMemberScheduleSummary",
+  );
+
+  const schedule = await repo.findDueScheduleById(scheduleId);
+  if (!schedule || schedule.CooperativeId !== cooperativeId) {
+    throw new NotFoundError("Due schedule not found");
+  }
+
+  const payments = await repo.getMemberSchedulePayments(scheduleId, memberId);
+
+  const totalPaid = payments
+    .filter((p) => p.Status === "Paid")
+    .reduce((sum, p) => sum + (p.PaidAmount != null ? Number(p.PaidAmount) : 0), 0);
+
+  const totalOwed = payments
+    .filter((p) => p.Status === "Pending" || p.Status === "Overdue")
+    .reduce((sum, p) => sum + Number(p.Amount), 0);
+
+  const cyclesEnrolled = payments.length;
+
+  return {
+    summary: { totalPaid, totalOwed, cyclesEnrolled },
+    payments: payments.map(mapPaymentList),
+  };
+}
+
 // ─── Global: list all schedules (admin overview) ──────────────────────────────
 
 export async function listAllDueSchedules(

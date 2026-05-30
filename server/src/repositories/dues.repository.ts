@@ -529,7 +529,9 @@ export async function updateDuePayment(
   }
   if (fields.paidDate !== undefined) {
     sets.push("PaidDate = ?");
-    params.push(fields.paidDate.replace("T", " ").replace("Z", "").split(".")[0]);
+    params.push(
+      fields.paidDate.replace("T", " ").replace("Z", "").split(".")[0],
+    );
   }
   if (fields.paidAmount !== undefined) {
     sets.push("PaidAmount = ?");
@@ -657,6 +659,28 @@ export async function listMemberOutstandingPayments(
      WHERE dp.MemberId = ? AND dp.CooperativeId = ? AND dp.Status IN ('Pending', 'Overdue')
      ORDER BY dp.DueDate ASC`,
     [memberId, cooperativeId],
+  );
+  return rows;
+}
+
+export async function getMemberSchedulePayments(
+  scheduleId: string,
+  memberId: string,
+): Promise<DuePaymentListRow[]> {
+  logger.info(
+    { scheduleId, memberId },
+    "Repository: getMemberSchedulePayments",
+  );
+  const [rows] = await pool.execute<DuePaymentListRow[]>(
+    `SELECT dp.*,
+            ds.Name AS ScheduleName,
+            CONCAT(mu.FirstName, ' ', mu.LastName) AS MemberFullName
+     FROM DuePayments dp
+     JOIN DueSchedules ds ON ds.Id = dp.DueScheduleId
+     JOIN MemberUsers mu ON mu.Id = dp.MemberId
+     WHERE dp.DueScheduleId = ? AND dp.MemberId = ?
+     ORDER BY dp.DueDate ASC`,
+    [scheduleId, memberId],
   );
   return rows;
 }

@@ -434,4 +434,40 @@ router.patch(
   controller.waivePayment,
 );
 
+/**
+ * @swagger
+ * /api/coop-admin/cooperatives/{cooperativeId}/dues/schedules/{scheduleId}/member-summary/{memberId}:
+ *   get:
+ *     summary: Get a member's payment summary and history for a specific due schedule
+ *     tags: [CoopDues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cooperativeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: scheduleId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: memberId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Member summary (totalPaid, totalOwed, cyclesEnrolled) and payment records
+ *       404:
+ *         description: Due schedule not found
+ */
+router.get(
+  "/schedules/:scheduleId/member-summary/:memberId",
+  requireAdminPermission("CoopDuesRead"),
+  controller.getMemberScheduleSummary,
+);
+
 export default router;

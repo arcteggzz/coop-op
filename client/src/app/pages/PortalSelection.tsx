@@ -1,7 +1,13 @@
+import { useEffect } from "react";
 import { Link } from "react-router";
 import { Shield, Briefcase, Users, ArrowRight } from "lucide-react";
+import axiosInstance from "../api/axiosInstance";
 
 export default function PortalSelection() {
+  useEffect(() => {
+    axiosInstance.get("/health").catch(() => {});
+  }, []);
+
   return (
     <div className="bg-[#fafbfd] min-h-screen flex flex-col">
       {/* Top gradient bar — all 3 portal colors */}

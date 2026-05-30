@@ -170,6 +170,25 @@ export function useWaiveDuePayment(baseUrl: string, cooperativeId: string) {
   });
 }
 
+export function useMemberScheduleSummary(
+  baseUrl: string,
+  cooperativeId: string,
+  scheduleId: string,
+  memberId: string | null,
+) {
+  return useQuery({
+    queryKey: [
+      "member-schedule-summary",
+      baseUrl,
+      cooperativeId,
+      scheduleId,
+      memberId,
+    ],
+    queryFn: () => api.getMemberScheduleSummary(baseUrl, scheduleId, memberId!),
+    enabled: !!cooperativeId && !!scheduleId && !!memberId,
+  });
+}
+
 // ─── Admin global overview hook ───────────────────────────────────────────────
 
 export function useAllDueSchedules(params?: {

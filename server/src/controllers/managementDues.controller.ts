@@ -25,10 +25,17 @@ export async function createDueSchedule(
       "Controller: POST /management/dues/:cooperativeId/schedules",
     );
 
-    const { error, value } = createDueScheduleSchema.validate(req.body, { abortEarly: false });
+    const { error, value } = createDueScheduleSchema.validate(req.body, {
+      abortEarly: false,
+    });
     if (error) throw new ValidationError(error.message);
 
-    const schedule = await service.createDueSchedule(value, cooperativeId, managerUser.id, "Manager");
+    const schedule = await service.createDueSchedule(
+      value,
+      cooperativeId,
+      managerUser.id,
+      "Manager",
+    );
     res.status(201).json({ success: true, data: { schedule } });
   } catch (err) {
     next(err);
@@ -43,14 +50,22 @@ export async function listDueSchedules(
 ): Promise<void> {
   try {
     const { cooperativeId } = req.params as { cooperativeId: string };
-    logger.info({ cooperativeId }, "Controller: GET /management/dues/:cooperativeId/schedules");
+    logger.info(
+      { cooperativeId },
+      "Controller: GET /management/dues/:cooperativeId/schedules",
+    );
 
     const page = parseInt((req.query["page"] as string) || "1", 10);
     const pageSize = parseInt((req.query["pageSize"] as string) || "20", 10);
     const isActiveRaw = req.query["isActive"] as string | undefined;
-    const isActive = isActiveRaw !== undefined ? isActiveRaw === "true" : undefined;
+    const isActive =
+      isActiveRaw !== undefined ? isActiveRaw === "true" : undefined;
 
-    const result = await service.listDueSchedules(cooperativeId, { page, pageSize, isActive });
+    const result = await service.listDueSchedules(cooperativeId, {
+      page,
+      pageSize,
+      isActive,
+    });
     res.status(200).json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -68,7 +83,10 @@ export async function getDueSchedule(
       cooperativeId: string;
       scheduleId: string;
     };
-    logger.info({ cooperativeId, scheduleId }, "Controller: GET /management/dues/:cooperativeId/schedules/:scheduleId");
+    logger.info(
+      { cooperativeId, scheduleId },
+      "Controller: GET /management/dues/:cooperativeId/schedules/:scheduleId",
+    );
 
     const schedule = await service.getDueSchedule(cooperativeId, scheduleId);
     res.status(200).json({ success: true, data: { schedule } });
@@ -94,10 +112,16 @@ export async function updateDueSchedule(
       "Controller: PATCH /management/dues/:cooperativeId/schedules/:scheduleId",
     );
 
-    const { error, value } = updateDueScheduleSchema.validate(req.body, { abortEarly: false });
+    const { error, value } = updateDueScheduleSchema.validate(req.body, {
+      abortEarly: false,
+    });
     if (error) throw new ValidationError(error.message);
 
-    const schedule = await service.updateDueSchedule(cooperativeId, scheduleId, value);
+    const schedule = await service.updateDueSchedule(
+      cooperativeId,
+      scheduleId,
+      value,
+    );
     res.status(200).json({ success: true, data: { schedule } });
   } catch (err) {
     next(err);
@@ -145,10 +169,18 @@ export async function issueDues(
       "Controller: POST /management/dues/:cooperativeId/schedules/:scheduleId/issue",
     );
 
-    const { error, value } = issueDuesSchema.validate(req.body, { abortEarly: false });
+    const { error, value } = issueDuesSchema.validate(req.body, {
+      abortEarly: false,
+    });
     if (error) throw new ValidationError(error.message);
 
-    const result = await service.issueDues(cooperativeId, scheduleId, value, managerUser.id, "Manager");
+    const result = await service.issueDues(
+      cooperativeId,
+      scheduleId,
+      value,
+      managerUser.id,
+      "Manager",
+    );
     res.status(201).json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -163,7 +195,10 @@ export async function listDuePayments(
 ): Promise<void> {
   try {
     const { cooperativeId } = req.params as { cooperativeId: string };
-    logger.info({ cooperativeId }, "Controller: GET /management/dues/:cooperativeId/payments");
+    logger.info(
+      { cooperativeId },
+      "Controller: GET /management/dues/:cooperativeId/payments",
+    );
 
     const page = parseInt((req.query["page"] as string) || "1", 10);
     const pageSize = parseInt((req.query["pageSize"] as string) || "20", 10);
@@ -174,7 +209,10 @@ export async function listDuePayments(
       status: req.query["status"] as string | undefined,
     };
 
-    const result = await service.listDuePayments(cooperativeId, filters, { page, pageSize });
+    const result = await service.listDuePayments(cooperativeId, filters, {
+      page,
+      pageSize,
+    });
     res.status(200).json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -198,10 +236,46 @@ export async function recordPayment(
       "Controller: PATCH /management/dues/:cooperativeId/payments/:paymentId/record",
     );
 
-    const { error, value } = recordPaymentSchema.validate(req.body, { abortEarly: false });
+    const { error, value } = recordPaymentSchema.validate(req.body, {
+      abortEarly: false,
+    });
     if (error) throw new ValidationError(error.message);
 
-    const result = await service.recordManualPayment(cooperativeId, paymentId, value, managerUser.id, "Manager");
+    const result = await service.recordManualPayment(
+      cooperativeId,
+      paymentId,
+      value,
+      managerUser.id,
+      "Manager",
+    );
+    res.status(200).json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─── GET /api/management/dues/:cooperativeId/schedules/:scheduleId/member-summary/:memberId
+export async function getMemberScheduleSummary(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { cooperativeId, scheduleId, memberId } = req.params as {
+      cooperativeId: string;
+      scheduleId: string;
+      memberId: string;
+    };
+    logger.info(
+      { cooperativeId, scheduleId, memberId },
+      "Controller: GET /management/dues/:cooperativeId/schedules/:scheduleId/member-summary/:memberId",
+    );
+
+    const result = await service.getMemberScheduleSummary(
+      cooperativeId,
+      scheduleId,
+      memberId,
+    );
     res.status(200).json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -222,7 +296,10 @@ export async function getDashboardSummary(
     );
 
     const memberId = req.query["memberId"] as string | undefined;
-    const result = await service.getDueDashboardSummary(cooperativeId, memberId);
+    const result = await service.getDueDashboardSummary(
+      cooperativeId,
+      memberId,
+    );
     res.status(200).json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -246,10 +323,18 @@ export async function waivePayment(
       "Controller: PATCH /management/dues/:cooperativeId/payments/:paymentId/waive",
     );
 
-    const { error, value } = waivePaymentSchema.validate(req.body, { abortEarly: false });
+    const { error, value } = waivePaymentSchema.validate(req.body, {
+      abortEarly: false,
+    });
     if (error) throw new ValidationError(error.message);
 
-    const result = await service.waiveDuePayment(cooperativeId, paymentId, value, managerUser.id, "Manager");
+    const result = await service.waiveDuePayment(
+      cooperativeId,
+      paymentId,
+      value,
+      managerUser.id,
+      "Manager",
+    );
     res.status(200).json({ success: true, data: result });
   } catch (err) {
     next(err);
