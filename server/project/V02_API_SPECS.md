@@ -10,25 +10,25 @@
 
 ### Back Office Admin (new)
 
-| Key                | Grants                                         |
-|--------------------|------------------------------------------------|
-| `CoopDuesRead`     | GET endpoints on dues                          |
-| `CoopDuesWrite`    | POST/PUT/PATCH/DELETE on dues                  |
-| `CoopLeviesRead`   | GET endpoints on levies                        |
-| `CoopLeviesWrite`  | POST/PUT/PATCH/DELETE on levies                |
-| `CoopSavingsRead`  | GET endpoints on savings                       |
-| `CoopSavingsWrite` | POST/PUT/PATCH/DELETE on savings               |
+| Key                | Grants                           |
+| ------------------ | -------------------------------- |
+| `CoopDuesRead`     | GET endpoints on dues            |
+| `CoopDuesWrite`    | POST/PUT/PATCH/DELETE on dues    |
+| `CoopLeviesRead`   | GET endpoints on levies          |
+| `CoopLeviesWrite`  | POST/PUT/PATCH/DELETE on levies  |
+| `CoopSavingsRead`  | GET endpoints on savings         |
+| `CoopSavingsWrite` | POST/PUT/PATCH/DELETE on savings |
 
 ### Manager Portal (new)
 
-| Key                       | Grants                                   |
-|---------------------------|------------------------------------------|
-| `ManagementDuesRead`      | GET endpoints on dues                    |
-| `ManagementDuesWrite`     | POST/PUT/PATCH/DELETE on dues            |
-| `ManagementLeviesRead`    | GET endpoints on levies                  |
-| `ManagementLeviesWrite`   | POST/PUT/PATCH/DELETE on levies          |
-| `ManagementSavingsRead`   | GET endpoints on savings                 |
-| `ManagementSavingsWrite`  | POST/PUT/PATCH/DELETE on savings         |
+| Key                      | Grants                           |
+| ------------------------ | -------------------------------- |
+| `ManagementDuesRead`     | GET endpoints on dues            |
+| `ManagementDuesWrite`    | POST/PUT/PATCH/DELETE on dues    |
+| `ManagementLeviesRead`   | GET endpoints on levies          |
+| `ManagementLeviesWrite`  | POST/PUT/PATCH/DELETE on levies  |
+| `ManagementSavingsRead`  | GET endpoints on savings         |
+| `ManagementSavingsWrite` | POST/PUT/PATCH/DELETE on savings |
 
 ---
 
@@ -45,6 +45,7 @@ File: `coop-dues.controller.ts`
 Auth: All routes require valid admin JWT.
 
 #### Permission guards
+
 - GET routes require `CoopDuesRead` or `SuperAdmin`/`RootAdmin`.
 - POST/PATCH/DELETE routes require `CoopDuesWrite` or `SuperAdmin`/`RootAdmin`.
 
@@ -173,6 +174,7 @@ File: `management-dues.controller.ts`
 Auth: All routes require valid manager JWT.
 
 #### Permission guards
+
 - GET routes require `ManagementDuesRead` or `SuperManager`/`RootManager`.
 - POST/PATCH/DELETE routes require `ManagementDuesWrite` or `SuperManager`/`RootManager`.
 
@@ -260,6 +262,7 @@ File: `coop-levies.controller.ts`
 Auth: All routes require valid admin JWT.
 
 #### Permission guards
+
 - GET routes require `CoopLeviesRead` or `SuperAdmin`/`RootAdmin`.
 - POST/PATCH/DELETE routes require `CoopLeviesWrite` or `SuperAdmin`/`RootAdmin`.
 
@@ -384,6 +387,7 @@ File: `management-levies.controller.ts`
 Auth: All routes require valid manager JWT.
 
 #### Permission guards
+
 - GET routes require `ManagementLeviesRead` or `SuperManager`/`RootManager`.
 - POST/PATCH/DELETE routes require `ManagementLeviesWrite` or `SuperManager`/`RootManager`.
 
@@ -444,8 +448,8 @@ Pay a levy from the member's wallet.
 - Validate assignment belongs to calling member and `CooperativeId = cooperativeId`. If not: 404 `LEVY_ASSIGNMENT_NOT_FOUND`.
 - If `Status = 'Paid'` or `Status = 'Waived'`: return 409 `LEVY_ALREADY_PAID`.
 - Check wallet balance via Embedly. If insufficient: return 400 `INSUFFICIENT_WALLET_BALANCE`.
-- Initiate wallet debit via Embedly payout to cooperative wallet.
-- On success: update `LevyAssignments`: `Status = 'Paid'`, `PaidDate = now()`, `PaidAmount = amount`, `RecordedById = memberId`, `RecordedByType = 'Member'`, `DateUpdated = now()`.
+- Initiate wallet debit via Embedly wallet to wallet api to cooperative wallet.
+- On success: update `LevyAssignments`: `Status = 'Paid'`, `PaidDate = now()`, `PaidAmount = amount`, `RecordedById = memberId`, `RecordedByType = 'Member'`, `DateUpdated = now()` and insert to EmbedlyTransactions table accordingly.
 - Return: `{ id, levyName, status, paidDate, paidAmount }`.
 
 ---
@@ -465,6 +469,7 @@ Auth: All routes require valid admin JWT.
 Savings plans are **member-owned**. Admins can view all plans across a cooperative and create/deposit/withdraw on a member's behalf when the member requests it.
 
 #### Permission guards
+
 - GET routes require `CoopSavingsRead` or `SuperAdmin`/`RootAdmin`.
 - POST routes require `CoopSavingsWrite` or `SuperAdmin`/`RootAdmin`.
 
@@ -548,6 +553,7 @@ File: `management-savings.controller.ts`
 Auth: All routes require valid manager JWT.
 
 #### Permission guards
+
 - GET routes require `ManagementSavingsRead` or `SuperManager`/`RootManager`.
 - POST routes require `ManagementSavingsWrite` or `SuperManager`/`RootManager`.
 
@@ -658,16 +664,16 @@ Withdraw from savings to wallet.
 
 ## Error Code Reference Additions
 
-| Code                          | HTTP Status | Meaning                                              |
-|-------------------------------|-------------|------------------------------------------------------|
-| `DUE_SCHEDULE_NOT_FOUND`      | 404         | No matching due schedule                             |
-| `DUE_PAYMENT_NOT_FOUND`       | 404         | No matching due payment record                       |
-| `DUE_PERIOD_ALREADY_ISSUED`   | 409         | Dues for this period have already been issued        |
-| `DUE_ALREADY_PAID`            | 409         | Due payment is already marked as paid                |
-| `LEVY_NOT_FOUND`              | 404         | No matching levy                                     |
-| `LEVY_ASSIGNMENT_NOT_FOUND`   | 404         | No matching levy assignment                          |
-| `LEVY_ALREADY_PAID`           | 409         | Levy assignment already paid or waived               |
-| `SAVINGS_PLAN_NOT_FOUND`      | 404         | No matching savings plan                             |
-| `SAVINGS_PLAN_CLOSED`         | 400         | Savings plan is not Active (Paused or Closed)        |
-| `INSUFFICIENT_WALLET_BALANCE` | 400         | Wallet balance too low to cover the payment          |
-| `INSUFFICIENT_SAVINGS_BALANCE`| 400         | Savings balance too low to cover the withdrawal      |
+| Code                           | HTTP Status | Meaning                                         |
+| ------------------------------ | ----------- | ----------------------------------------------- |
+| `DUE_SCHEDULE_NOT_FOUND`       | 404         | No matching due schedule                        |
+| `DUE_PAYMENT_NOT_FOUND`        | 404         | No matching due payment record                  |
+| `DUE_PERIOD_ALREADY_ISSUED`    | 409         | Dues for this period have already been issued   |
+| `DUE_ALREADY_PAID`             | 409         | Due payment is already marked as paid           |
+| `LEVY_NOT_FOUND`               | 404         | No matching levy                                |
+| `LEVY_ASSIGNMENT_NOT_FOUND`    | 404         | No matching levy assignment                     |
+| `LEVY_ALREADY_PAID`            | 409         | Levy assignment already paid or waived          |
+| `SAVINGS_PLAN_NOT_FOUND`       | 404         | No matching savings plan                        |
+| `SAVINGS_PLAN_CLOSED`          | 400         | Savings plan is not Active (Paused or Closed)   |
+| `INSUFFICIENT_WALLET_BALANCE`  | 400         | Wallet balance too low to cover the payment     |
+| `INSUFFICIENT_SAVINGS_BALANCE` | 400         | Savings balance too low to cover the withdrawal |

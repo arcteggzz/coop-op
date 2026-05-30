@@ -70,6 +70,7 @@ CooperativeId     CHAR(36)       NOT NULL   -- FK → Cooperatives
 Name              VARCHAR(255)   NOT NULL   -- e.g. "Absenteeism Fine — March AGM"
 Description       TEXT           NULL
 DefaultAmount     DECIMAL(15,2)  NOT NULL   -- default charge per member (can be overridden per assignment)
+LevyAccountNumber VARCHAR(50)    NOT NULL   -- account number of the destination treasury wallet
 DueDate           DATE           NOT NULL
 IsActive          TINYINT(1)     NOT NULL DEFAULT 1
 CreatedById       CHAR(36)       NOT NULL
@@ -91,6 +92,7 @@ LevyId            CHAR(36)       NOT NULL   -- FK → Levies
 MemberId          CHAR(36)       NOT NULL   -- FK → MemberUsers
 CooperativeId     CHAR(36)       NOT NULL   -- FK → Cooperatives (denormalized)
 Amount            DECIMAL(15,2)  NOT NULL   -- can differ from Levies.DefaultAmount
+LevyAccountNumber VARCHAR(50)    NULL       -- snapshotted from Levies at assignment time
 Status            ENUM('Pending','Paid','Waived')  NOT NULL DEFAULT 'Pending'
 PaidDate          TIMESTAMP(6)   NULL
 PaidAmount        DECIMAL(15,2)  NULL

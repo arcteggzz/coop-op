@@ -32,13 +32,13 @@ iv. From the table in iii, we can now get them to click on one of the cycles sho
 
 ## 2. Levies setup and Tracking (fines/fees that members pay from thier wallet to a Treasury Account)
 
-Created on demand. The treasurer clicks "Create new levy," gives it a name, amount, deadline, and selects which members it applies to (all, or a subset).)
+Created on demand. The treasurer/manager clicks "Create new levy," gives it a name, amount, deadline, and selects which members it applies to (all, or a subset or even just 1 or 2).
 
 ### A. Setup (on Back Office/Manager portal)
 
 i. create a new levy (name, amount, deadline, members who it applies to),
 ii. Multiple levies can be open at once
-iii. set which cooperative treasury account should receive the funds.
+iii. set which cooperative wallet account should receive the funds.
 
 ### B. Operational Monitoring View (on Back Office/Manager)
 

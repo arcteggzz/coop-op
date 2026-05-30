@@ -5,6 +5,7 @@ import {
   Building2,
   Banknote,
   Receipt,
+  FileText,
   ShieldCheck,
   Settings,
   LogOut,
@@ -123,6 +124,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/dues",
       icon: Receipt,
       label: "Dues",
+      exact: false,
+    },
+    {
+      path: "/admin/levies",
+      icon: FileText,
+      label: "Levies",
       exact: false,
     },
     {

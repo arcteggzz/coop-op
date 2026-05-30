@@ -14,6 +14,12 @@ import {
   useMemberOutstandingDues,
   usePayMemberDue,
 } from "../../hooks/useDues";
+// LEVIES: added for levies section on the dues tab (per FE spec — levies share the dues tab)
+import {
+  useMemberLevyAssignments,
+  usePayMemberLevy,
+} from "../../hooks/useLevies";
+import type { MemberLevyAssignment } from "../../api/levies.api";
 import type {
   OutstandingDuePayment,
   DueSchedule,
@@ -53,7 +59,8 @@ function StatusBadge({ status }: { status: string }) {
 type View =
   | { mode: "home" }
   | { mode: "confirm-pay"; payment: OutstandingDuePayment }
-  | { mode: "history"; scheduleId: string; scheduleName: string };
+  | { mode: "history"; scheduleId: string; scheduleName: string }
+  | { mode: "confirm-pay-levy"; assignment: MemberLevyAssignment };
 
 // ─── Outstanding Due Card ─────────────────────────────────────────────────────
 
@@ -159,6 +166,56 @@ function HistoryRow({ payment }: { payment: MemberDuePayment }) {
   );
 }
 
+// ─── Levy Card ────────────────────────────────────────────────────────────────
+
+function LevyCard({
+  assignment,
+  onPayNow,
+}: {
+  assignment: MemberLevyAssignment;
+  onPayNow: () => void;
+}) {
+  const isPending = assignment.status === "Pending";
+  return (
+    <div
+      className={`rounded-2xl border p-4 ${isPending ? "border-[#e9d7fe] bg-[#faf5ff]" : "border-[#e5e7eb] bg-white"}`}
+    >
+      <div className="flex items-start justify-between mb-2">
+        <div className="min-w-0 flex-1 mr-2">
+          <p className="font-['Albert_Sans',sans-serif] text-[14px] font-semibold text-[#101828] truncate">
+            {assignment.levyName}
+          </p>
+          <p className="font-['Albert_Sans',sans-serif] text-[12px] text-[#6b7280]">
+            Due {formatDateOnly(assignment.dueDate)}
+          </p>
+        </div>
+        <StatusBadge status={assignment.status} />
+      </div>
+      <div className="flex items-center justify-between mt-3">
+        <p className="font-['Albert_Sans',sans-serif] font-bold text-[18px] text-[#101828]">
+          {formatCurrency(assignment.amount)}
+        </p>
+        {isPending && (
+          <button
+            onClick={onPayNow}
+            className="px-4 py-2 rounded-[10px] text-[13px] font-semibold text-white bg-[#7F56D9] hover:bg-[#6941C6] transition-colors cursor-pointer"
+          >
+            Pay Now
+          </button>
+        )}
+        {assignment.status === "Paid" && (
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 size={14} className="text-[#16a34a]" />
+            <span className="font-['Albert_Sans',sans-serif] text-[12px] text-[#16a34a] font-medium">
+              Paid
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function MemberDues() {
@@ -186,9 +243,22 @@ export default function MemberDues() {
 
   const payMutation = usePayMemberDue(cooperativeId);
 
+  // LEVIES: query member levy assignments for the levies section
+  const { data: leviesData, isLoading: leviesLoading } =
+    useMemberLevyAssignments(cooperativeId, { pageSize: 50 });
+  const levies = leviesData?.data ?? [];
+  const payLevyMutation = usePayMemberLevy(cooperativeId);
+
   const handleConfirmPay = () => {
     if (view.mode !== "confirm-pay") return;
     payMutation.mutate(view.payment.id, {
+      onSuccess: () => setView({ mode: "home" }),
+    });
+  };
+
+  const handleConfirmPayLevy = () => {
+    if (view.mode !== "confirm-pay-levy") return;
+    payLevyMutation.mutate(view.assignment.id, {
       onSuccess: () => setView({ mode: "home" }),
     });
   };
@@ -199,50 +269,6 @@ export default function MemberDues() {
         {/* ── View: Home ──────────────────────────────────────────────────────── */}
         {view.mode === "home" && (
           <div className="space-y-4">
-            {/* Outstanding section */}
-            <div>
-              <p className="font-['Albert_Sans',sans-serif] text-[11px] font-semibold text-[#6b7280] uppercase tracking-wide mb-3">
-                Outstanding
-              </p>
-
-              {outstandingLoading ? (
-                <div className="space-y-3 animate-pulse">
-                  {[1, 2].map((i) => (
-                    <div
-                      key={i}
-                      className="rounded-2xl border border-[#e9d7fe] bg-[#faf5ff] p-4"
-                    >
-                      <div className="h-4 bg-[#e9d7fe] rounded w-2/3 mb-2" />
-                      <div className="h-3 bg-[#e9d7fe] rounded w-1/3 mb-3" />
-                      <div className="flex justify-between items-center">
-                        <div className="h-5 bg-[#e9d7fe] rounded w-24" />
-                        <div className="h-8 bg-[#7F56D9] rounded-[10px] w-20 opacity-30" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : outstanding.length === 0 ? (
-                <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl p-4 flex items-center gap-3">
-                  <CheckCircle2 size={20} className="text-[#16a34a] shrink-0" />
-                  <p className="font-['Albert_Sans',sans-serif] text-[13px] text-[#16a34a] font-medium">
-                    You're all caught up — no outstanding dues.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {outstanding.map((p) => (
-                    <OutstandingCard
-                      key={p.id}
-                      payment={p}
-                      onPayNow={() =>
-                        setView({ mode: "confirm-pay", payment: p })
-                      }
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* All Dues section */}
             <div>
               <p className="font-['Albert_Sans',sans-serif] text-[11px] font-semibold text-[#6b7280] uppercase tracking-wide mb-3">
@@ -280,6 +306,95 @@ export default function MemberDues() {
                           scheduleId: s.id,
                           scheduleName: s.name,
                         })
+                      }
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Outstanding section */}
+              <div>
+                <p className="font-['Albert_Sans',sans-serif] text-[11px] font-semibold text-[#6b7280] uppercase tracking-wide my-3">
+                  Outstanding Dues
+                </p>
+
+                {outstandingLoading ? (
+                  <div className="space-y-3 animate-pulse">
+                    {[1, 2].map((i) => (
+                      <div
+                        key={i}
+                        className="rounded-2xl border border-[#e9d7fe] bg-[#faf5ff] p-4"
+                      >
+                        <div className="h-4 bg-[#e9d7fe] rounded w-2/3 mb-2" />
+                        <div className="h-3 bg-[#e9d7fe] rounded w-1/3 mb-3" />
+                        <div className="flex justify-between items-center">
+                          <div className="h-5 bg-[#e9d7fe] rounded w-24" />
+                          <div className="h-8 bg-[#7F56D9] rounded-[10px] w-20 opacity-30" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : outstanding.length === 0 ? (
+                  <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl p-4 flex items-center gap-3">
+                    <CheckCircle2
+                      size={20}
+                      className="text-[#16a34a] shrink-0"
+                    />
+                    <p className="font-['Albert_Sans',sans-serif] text-[13px] text-[#16a34a] font-medium">
+                      You're all caught up — no outstanding dues.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {outstanding.map((p) => (
+                      <OutstandingCard
+                        key={p.id}
+                        payment={p}
+                        onPayNow={() =>
+                          setView({ mode: "confirm-pay", payment: p })
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* LEVIES: levies section on the dues tab (per FE spec — shared tab) */}
+            <div className="mt-16">
+              <p className="font-['Albert_Sans',sans-serif] text-[11px] font-semibold text-[#6b7280] uppercase tracking-wide mb-3">
+                All Levies
+              </p>
+
+              {leviesLoading ? (
+                <div className="space-y-3 animate-pulse">
+                  {[1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl border border-[#e5e7eb] bg-white p-4"
+                    >
+                      <div className="h-4 bg-[#f3f4f6] rounded w-2/3 mb-2" />
+                      <div className="h-3 bg-[#f3f4f6] rounded w-1/3 mb-3" />
+                      <div className="flex justify-between items-center">
+                        <div className="h-5 bg-[#f3f4f6] rounded w-24" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : levies.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-[#e5e7eb] p-4 text-center">
+                  <p className="font-['Albert_Sans',sans-serif] text-[13px] text-[#6b7280]">
+                    No levies assigned to you in this cooperative.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {levies.map((a) => (
+                    <LevyCard
+                      key={a.id}
+                      assignment={a}
+                      onPayNow={() =>
+                        setView({ mode: "confirm-pay-levy", assignment: a })
                       }
                     />
                   ))}
@@ -365,6 +480,82 @@ export default function MemberDues() {
             <button
               onClick={() => setView({ mode: "home" })}
               disabled={payMutation.isPending}
+              className="w-full mt-3 py-3 rounded-[12px] font-['Albert_Sans',sans-serif] font-medium text-[15px] text-[#374151] border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors cursor-pointer disabled:opacity-60"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {/* ── View: Confirm Pay Levy ──────────────────────────────────────────── */}
+        {/* LEVIES: levy payment confirmation view (same pattern as dues confirm-pay) */}
+        {view.mode === "confirm-pay-levy" && (
+          <div>
+            <button
+              onClick={() => setView({ mode: "home" })}
+              className="flex items-center gap-1.5 text-[13px] text-[#6b7280] hover:text-[#374151] mb-5 cursor-pointer"
+            >
+              <ChevronLeft size={16} /> Back
+            </button>
+
+            <p className="font-['Albert_Sans',sans-serif] text-[18px] font-bold text-[#101828] mb-5">
+              Confirm Levy Payment
+            </p>
+
+            <div className="bg-[#faf5ff] border border-[#e9d7fe] rounded-2xl p-5 space-y-3 mb-5">
+              <div className="flex justify-between">
+                <span className="font-['Albert_Sans',sans-serif] text-[13px] text-[#6b7280]">
+                  Levy
+                </span>
+                <span className="font-['Albert_Sans',sans-serif] text-[13px] font-semibold text-[#101828]">
+                  {view.assignment.levyName}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-['Albert_Sans',sans-serif] text-[13px] text-[#6b7280]">
+                  Deadline
+                </span>
+                <span className="font-['Albert_Sans',sans-serif] text-[13px] text-[#374151]">
+                  {formatDateOnly(view.assignment.dueDate)}
+                </span>
+              </div>
+              <div className="border-t border-[#e9d7fe] pt-3 flex justify-between">
+                <span className="font-['Albert_Sans',sans-serif] text-[14px] font-semibold text-[#374151]">
+                  Amount
+                </span>
+                <span className="font-['Albert_Sans',sans-serif] text-[16px] font-bold text-[#7F56D9]">
+                  {formatCurrency(view.assignment.amount)}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-[#fffbeb] border border-[#fde68a] rounded-xl px-4 py-3 flex items-start gap-2 mb-5">
+              <AlertCircle
+                size={16}
+                className="text-[#ca8a04] shrink-0 mt-0.5"
+              />
+              <p className="font-['Albert_Sans',sans-serif] text-[12px] text-[#92400e]">
+                This amount will be deducted from your wallet. Make sure you
+                have sufficient balance.
+              </p>
+            </div>
+
+            <button
+              onClick={handleConfirmPayLevy}
+              disabled={payLevyMutation.isPending}
+              className="w-full py-3 rounded-[12px] font-['Albert_Sans',sans-serif] font-semibold text-[15px] text-white bg-[#7F56D9] hover:bg-[#6941C6] transition-colors cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {payLevyMutation.isPending && (
+                <Loader2 size={16} className="animate-spin" />
+              )}
+              {payLevyMutation.isPending
+                ? "Processing..."
+                : `Pay ${formatCurrency(view.assignment.amount)}`}
+            </button>
+
+            <button
+              onClick={() => setView({ mode: "home" })}
+              disabled={payLevyMutation.isPending}
               className="w-full mt-3 py-3 rounded-[12px] font-['Albert_Sans',sans-serif] font-medium text-[15px] text-[#374151] border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors cursor-pointer disabled:opacity-60"
             >
               Cancel

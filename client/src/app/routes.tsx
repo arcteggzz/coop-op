@@ -9,7 +9,7 @@ import AdminCooperatives from "./pages/admin/AdminCooperatives";
 import AdminCooperativeDetail from "./pages/admin/AdminCooperativeDetail";
 import AdminManagement from "./pages/admin/AdminManagement";
 import AdminDuesPage from "./pages/admin/AdminDuesPage";
-import AdminDueScheduleDetail from "./pages/admin/AdminDueScheduleDetail";
+import AdminLeviesPage from "./pages/admin/AdminLeviesPage";
 import PlaceholderPage from "./pages/admin/PlaceholderPage";
 
 // Manager
@@ -20,6 +20,8 @@ import ManagerManagers from "./pages/manager/ManagerManagers";
 import ManagerMembers from "./pages/manager/ManagerMembers";
 import ManagerDues from "./pages/manager/ManagerDues";
 import ManagerDueScheduleDetail from "./pages/manager/ManagerDueScheduleDetail";
+import ManagerLevies from "./pages/manager/ManagerLevies";
+import ManagerLevyDetail from "./pages/manager/ManagerLevyDetail";
 import ManagerPlaceholderPage from "./pages/manager/ManagerPlaceholderPage";
 
 // Member
@@ -85,7 +87,7 @@ export const router = createBrowserRouter([
     path: "/admin/cooperatives/:cooperativeId/dues/:scheduleId",
     element: (
       <ProtectedRoute userType="admin">
-        <AdminDueScheduleDetail />
+        <AdminCooperativeDetail />
       </ProtectedRoute>
     ),
   },
@@ -110,6 +112,22 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute userType="admin">
         <AdminDuesPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/levies",
+    element: (
+      <ProtectedRoute userType="admin">
+        <AdminLeviesPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/cooperatives/:cooperativeId/levies/:levyId",
+    element: (
+      <ProtectedRoute userType="admin">
+        <AdminCooperativeDetail />
       </ProtectedRoute>
     ),
   },
@@ -168,6 +186,22 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute userType="manager">
         <ManagerDueScheduleDetail />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/manager/levies",
+    element: (
+      <ProtectedRoute userType="manager">
+        <ManagerLevies />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/manager/levies/:levyId",
+    element: (
+      <ProtectedRoute userType="manager">
+        <ManagerLevyDetail />
       </ProtectedRoute>
     ),
   },

@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router";
+import { useParams, useLocation, Link } from "react-router";
 import AdminDues from "./AdminDues";
+import AdminLevies from "./AdminLevies";
+import AdminLevyDetail from "./AdminLevyDetail";
+import AdminDueScheduleDetail from "./AdminDueScheduleDetail";
 import DuesDashboardWidget from "../../components/DuesDashboardWidget";
 import { useAdminDueDashboardSummary } from "../../hooks/useDues";
 import { toast } from "sonner";
@@ -35,7 +38,7 @@ type Tab = "overview" | "dues" | "levies" | "managers" | "members";
 const NAV_ITEMS: { key: Tab; label: string; comingSoon?: boolean }[] = [
   { key: "overview", label: "Overview" },
   { key: "dues", label: "Dues" },
-  { key: "levies", label: "Levies", comingSoon: true },
+  { key: "levies", label: "Levies" },
   { key: "managers", label: "Managers" },
   { key: "members", label: "Members" },
 ];
@@ -578,7 +581,7 @@ function AdminWalletsSection({ cooperativeId }: { cooperativeId: string }) {
           </button>
         </div>
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
@@ -669,7 +672,7 @@ function AdminDuesSummarySection({ cooperativeId }: { cooperativeId: string }) {
   const { data: summary, isLoading } =
     useAdminDueDashboardSummary(cooperativeId);
   return (
-    <div className="mt-4">
+    <div className="">
       <DuesDashboardWidget
         cooperativeId={cooperativeId}
         summary={summary}
@@ -705,11 +708,17 @@ function ComingSoonSection({ title }: { title: string }) {
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function AdminCooperativeDetail() {
-  const { cooperativeId, tab } = useParams<{
-    cooperativeId: string;
-    tab?: string;
-  }>();
-  const activeTab: Tab = (tab as Tab) ?? "overview";
+  const { cooperativeId } = useParams<{ cooperativeId: string }>();
+  const location = useLocation();
+
+  // Derive active tab from the URL path so detail sub-routes highlight correctly
+  const coopBase = `/admin/cooperatives/${cooperativeId}`;
+  const afterCoop = location.pathname.slice(coopBase.length);
+  const segments = afterCoop.split("/").filter(Boolean);
+  const firstSegment = segments[0];
+  const activeTab: Tab = (firstSegment as Tab) ?? "overview";
+  const isOnDueDetail = firstSegment === "dues" && segments.length > 1;
+  const isOnLevyDetail = firstSegment === "levies" && segments.length > 1;
 
   const [showInviteManager, setShowInviteManager] = useState(false);
   const [showInviteMember, setShowInviteMember] = useState(false);
@@ -824,15 +833,18 @@ export default function AdminCooperativeDetail() {
           </div>
 
           {/* Content area */}
-          <div className="flex-1 p-8 bg-[#fafbfd] overflow-auto">
+          <div
+            className={`flex-1 overflow-auto ${isOnDueDetail || isOnLevyDetail ? "" : "p-8 bg-[#fafbfd]"}`}
+          >
             {/* Overview */}
             {activeTab === "overview" && (
-              <div>
+              <div className="space-y-8">
                 <AdminSummaryCards cooperativeId={cooperativeId!} />
+
                 <AdminWalletsSection cooperativeId={cooperativeId!} />
 
                 {/* Section 3: Dues & Levies */}
-                <section className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <AdminDuesSummarySection cooperativeId={cooperativeId!} />
                   <ComingSoonSection title="Levies" />
                 </section>
@@ -961,10 +973,17 @@ export default function AdminCooperativeDetail() {
               </div>
             )}
 
-            {/* Dues */}
-            {activeTab === "dues" && cooperativeId && (
+            {/* Dues list or embedded due detail */}
+            {activeTab === "dues" && !isOnDueDetail && cooperativeId && (
               <AdminDues cooperativeId={cooperativeId} />
             )}
+            {isOnDueDetail && <AdminDueScheduleDetail embedded />}
+
+            {/* Levies list or embedded levy detail */}
+            {activeTab === "levies" && !isOnLevyDetail && cooperativeId && (
+              <AdminLevies cooperativeId={cooperativeId} />
+            )}
+            {isOnLevyDetail && <AdminLevyDetail embedded />}
 
             {/* Members */}
             {activeTab === "members" && (

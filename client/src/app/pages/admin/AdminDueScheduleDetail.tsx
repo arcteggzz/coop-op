@@ -337,7 +337,7 @@ function WaiveModal({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export default function AdminDueScheduleDetail() {
+export default function AdminDueScheduleDetail({ embedded = false }: { embedded?: boolean }) {
   const { cooperativeId, scheduleId } = useParams<{
     cooperativeId: string;
     scheduleId: string;
@@ -524,12 +524,11 @@ export default function AdminDueScheduleDetail() {
     );
   }
 
-  return (
-    <AdminLayout>
-      <div
-        className="font-['Albert_Sans',sans-serif] flex flex-col"
-        style={{ minHeight: "calc(100vh - 64px)" }}
-      >
+  const content = (
+    <>
+    <div
+      className="font-['Albert_Sans',sans-serif] flex flex-col h-full"
+    >
         {/* ── Top bar ──────────────────────────────────────────────────────── */}
         <div className="px-8 pt-8 pb-6 border-b border-[#e5e7eb] bg-white">
           {/* Breadcrumb */}
@@ -1307,6 +1306,8 @@ export default function AdminDueScheduleDetail() {
           onClose={() => setWaiveTarget(null)}
         />
       )}
-    </AdminLayout>
+    </>
   );
+  if (embedded) return content;
+  return <AdminLayout>{content}</AdminLayout>;
 }

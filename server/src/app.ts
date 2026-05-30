@@ -28,6 +28,10 @@ import coopDuesRoutes from "./routes/coopDues.routes";
 import coopDuesOverviewRoutes from "./routes/coopDuesOverview.routes";
 import managementDuesRoutes from "./routes/managementDues.routes";
 import memberDuesRoutes from "./routes/memberDues.routes";
+import coopLeviesRoutes from "./routes/coopLevies.routes";
+import coopLeviesOverviewRoutes from "./routes/coopLeviesOverview.routes";
+import managementLeviesRoutes from "./routes/managementLevies.routes";
+import memberLeviesRoutes from "./routes/memberLevies.routes";
 
 const app = express();
 
@@ -144,6 +148,11 @@ app.use("/api/coop-admin/dues", coopDuesOverviewRoutes);
 app.use("/api/coop-admin/cooperatives/:cooperativeId/dues", coopDuesRoutes);
 app.use("/api/management/dues/:cooperativeId", managementDuesRoutes);
 app.use("/api/member/dues/:cooperativeId", memberDuesRoutes);
+// Levies routes — overview must be before the cooperativeId-scoped route
+app.use("/api/coop-admin/levies", coopLeviesOverviewRoutes);
+app.use("/api/coop-admin/cooperatives/:cooperativeId/levies", coopLeviesRoutes);
+app.use("/api/management/levies/:cooperativeId", managementLeviesRoutes);
+app.use("/api/member/levies/:cooperativeId", memberLeviesRoutes);
 
 // ─── Base Route ─────────────────────────────────────────────────────────────
 app.get("/", (_req, res) => {

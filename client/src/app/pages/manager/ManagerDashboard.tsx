@@ -357,8 +357,8 @@ function WalletsSection({ cooperativeId }: { cooperativeId: string }) {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2].map((i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
             <div
               key={i}
               className="rounded-2xl p-5 animate-pulse"

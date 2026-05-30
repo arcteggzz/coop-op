@@ -6,6 +6,7 @@ import {
   Users,
   Banknote,
   Receipt,
+  FileText,
   Settings,
   LogOut,
   ChevronDown,
@@ -152,6 +153,14 @@ export default function ManagerLayout({ children }: ManagerLayoutProps) {
       exact: false,
       alwaysVisible: false,
       permission: "ManagementDuesRead",
+    },
+    {
+      path: "/manager/levies",
+      icon: FileText,
+      label: "Levies",
+      exact: false,
+      alwaysVisible: false,
+      permission: "ManagementLeviesRead",
     },
     {
       path: "/manager/settings",
