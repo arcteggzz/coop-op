@@ -1,7 +1,14 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, ChevronLeft, Users, Trash2, Pencil, Search } from "lucide-react";
+import {
+  Loader2,
+  ChevronLeft,
+  Users,
+  Trash2,
+  Pencil,
+  Search,
+} from "lucide-react";
 import ManagerLayout from "../../components/ManagerLayout";
 import { useAuth } from "../../context/AuthContext";
 import { useManagerPermissions } from "../../hooks/useManagerPermissions";
@@ -90,16 +97,18 @@ function AssignLevyModal({
 
   const members = membersData?.data ?? [];
   const filteredMembers = search
-    ? members.filter((m) =>
-        `${m.firstName} ${m.lastName}`
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        m.email.toLowerCase().includes(search.toLowerCase()),
+    ? members.filter(
+        (m) =>
+          `${m.firstName} ${m.lastName}`
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+          m.email.toLowerCase().includes(search.toLowerCase()),
       )
     : members;
 
   const selectedMembers = members.filter((m) => selectedIds.includes(m.id));
-  const isAllSelected = members.length > 0 && selectedIds.length === members.length;
+  const isAllSelected =
+    members.length > 0 && selectedIds.length === members.length;
 
   const toggleAll = () => {
     setSelectedIds(isAllSelected ? [] : members.map((m) => m.id));
@@ -159,7 +168,10 @@ function AssignLevyModal({
               <div className="max-h-60 overflow-y-auto border border-[#e5e7eb] rounded-[10px]">
                 {loadingMembers ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 size={18} className="animate-spin text-[#6b7280]" />
+                    <Loader2
+                      size={18}
+                      className="animate-spin text-[#6b7280]"
+                    />
                   </div>
                 ) : filteredMembers.length === 0 ? (
                   <p className="text-center py-6 text-[13px] text-[#9ca3af]">
@@ -265,7 +277,9 @@ function AssignLevyModal({
                 {assignMutation.isPending && (
                   <Loader2 size={14} className="animate-spin" />
                 )}
-                {assignMutation.isPending ? "Assigning..." : "Confirm Assignment"}
+                {assignMutation.isPending
+                  ? "Assigning..."
+                  : "Confirm Assignment"}
               </button>
             </div>
           </>
@@ -355,7 +369,9 @@ function RecordPaymentModal({
               disabled={recordMutation.isPending}
               className={`flex-1 cursor-pointer py-2.5 rounded-[10px] text-[14px] font-semibold text-white bg-gradient-to-r ${THEME_GRADIENT} hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2`}
             >
-              {recordMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+              {recordMutation.isPending && (
+                <Loader2 size={14} className="animate-spin" />
+              )}
               {recordMutation.isPending ? "Recording..." : "Record Payment"}
             </button>
           </div>
@@ -428,7 +444,9 @@ function WaiveModal({
               disabled={waiveMutation.isPending}
               className={`flex-1 cursor-pointer py-2.5 rounded-[10px] text-[14px] font-semibold text-white bg-gradient-to-r ${THEME_GRADIENT} hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2`}
             >
-              {waiveMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+              {waiveMutation.isPending && (
+                <Loader2 size={14} className="animate-spin" />
+              )}
               {waiveMutation.isPending ? "Waiving..." : "Waive"}
             </button>
           </div>
@@ -546,7 +564,9 @@ function EditLevyModal({
               disabled={updateMutation.isPending}
               className={`flex-1 cursor-pointer py-2.5 rounded-[10px] text-[14px] font-semibold text-white bg-gradient-to-r ${THEME_GRADIENT} hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2`}
             >
-              {updateMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+              {updateMutation.isPending && (
+                <Loader2 size={14} className="animate-spin" />
+              )}
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </button>
           </div>
@@ -633,159 +653,134 @@ export default function ManagerLevyDetail() {
 
   return (
     <ManagerLayout>
-      <div className="font-['Albert_Sans',sans-serif] px-8 pt-8 pb-10">
-        {/* Back */}
-        <button
-          onClick={() => navigate("/manager/levies")}
-          className="flex items-center gap-1.5 text-[13px] text-[#6b7280] hover:text-[#374151] transition-colors cursor-pointer mb-6"
-        >
-          <ChevronLeft size={16} />
-          Back to Levies
-        </button>
+      <div
+        className="font-['Albert_Sans',sans-serif] flex flex-col"
+        style={{ minHeight: "calc(100vh - 64px)" }}
+      >
+        {/* ── White top bar ────────────────────────────────────────────── */}
+        <div className="px-8 pt-8 pb-6 border-b border-[#e5e7eb] bg-white">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 mb-3 text-[13px] text-[#6b7280]">
+            <Link
+              to="/manager/levies"
+              className="hover:text-[#0D8FAF] transition-colors"
+            >
+              Levies
+            </Link>
+            <span>/</span>
+            <span className="text-[#101828] font-medium">
+              {levyLoading ? "..." : (levy?.name ?? "Levy")}
+            </span>
+          </div>
 
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-[22px] font-bold text-[#101828]">
-                {levy.name}
-              </h1>
+          {/* Title row */}
+          <div className="flex items-start justify-between mb-2">
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="text-[22px] font-bold text-[#101828]">
+                  {levy.name}
+                </h1>
+                {levy.isActive ? (
+                  <span className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[rgba(22,163,74,0.1)] text-[#16a34a]">
+                    Active
+                  </span>
+                ) : (
+                  <span className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[#f3f4f6] text-[#6b7280]">
+                    Inactive
+                  </span>
+                )}
+              </div>
+              {levy.description && (
+                <p className="text-[13px] text-[#6b7280] mb-3">
+                  {levy.description}
+                </p>
+              )}
+            </div>
+            {canWrite && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveModal({ type: "edit" })}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] border border-[#e5e7eb] text-[13px] font-medium text-[#374151] hover:bg-[#f9fafb] transition-colors cursor-pointer"
+                >
+                  <Pencil size={14} />
+                  Edit
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleteMutation.isPending}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] border border-[rgba(220,38,38,0.3)] text-[13px] font-medium text-[#dc2626] hover:bg-[rgba(220,38,38,0.05)] transition-colors cursor-pointer disabled:opacity-60"
+                >
+                  <Trash2 size={14} />
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Metadata — inline spans */}
+          <div className="flex flex-wrap gap-x-6 gap-y-1 text-[13px] text-[#6b7280]">
+            <span>
+              <span className="font-medium text-[#374151]">
+                Default Amount:
+              </span>{" "}
+              {formatCurrency(levy.defaultAmount)}
+            </span>
+            <span>
+              <span className="font-medium text-[#374151]">Account No.:</span>{" "}
+              <span className="font-mono">{levy.levyAccountNumber}</span>
+            </span>
+            <span>
+              <span className="font-medium text-[#374151]">Due Date:</span>{" "}
+              {formatDateOnly(levy.dueDate)}
+            </span>
+            <span>
+              <span className="font-medium text-[#374151]">Status:</span>{" "}
               {levy.isActive ? (
-                <span className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[rgba(22,163,74,0.1)] text-[#16a34a]">
+                <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[rgba(22,163,74,0.1)] text-[#16a34a]">
                   Active
                 </span>
               ) : (
-                <span className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[#f3f4f6] text-[#6b7280]">
+                <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#f3f4f6] text-[#6b7280]">
                   Inactive
                 </span>
               )}
-            </div>
-            {levy.description && (
-              <p className="text-[14px] text-[#6b7280]">{levy.description}</p>
-            )}
-          </div>
-          {canWrite && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setActiveModal({ type: "edit" })}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] border border-[#e5e7eb] text-[13px] font-medium text-[#374151] hover:bg-[#f9fafb] transition-colors cursor-pointer"
-              >
-                <Pencil size={14} />
-                Edit
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleteMutation.isPending}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] border border-[rgba(220,38,38,0.3)] text-[13px] font-medium text-[#dc2626] hover:bg-[rgba(220,38,38,0.05)] transition-colors cursor-pointer disabled:opacity-60"
-              >
-                <Trash2 size={14} />
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Levy Metadata */}
-        <div className="bg-[#f9fafb] border border-[#e5e7eb] rounded-[12px] p-4 mb-6 flex flex-wrap gap-x-8 gap-y-3">
-          <div>
-            <p className="text-[11px] font-medium text-[#9ca3af] uppercase tracking-wide mb-0.5">Default Amount</p>
-            <p className="text-[13px] font-semibold text-[#101828]">{formatCurrency(levy.defaultAmount)}</p>
-          </div>
-          <div>
-            <p className="text-[11px] font-medium text-[#9ca3af] uppercase tracking-wide mb-0.5">Account No.</p>
-            <p className="text-[13px] font-semibold text-[#101828] font-mono">{levy.levyAccountNumber}</p>
-          </div>
-          <div>
-            <p className="text-[11px] font-medium text-[#9ca3af] uppercase tracking-wide mb-0.5">Due Date</p>
-            <p className="text-[13px] font-semibold text-[#101828]">{formatDateOnly(levy.dueDate)}</p>
-          </div>
-          <div>
-            <p className="text-[11px] font-medium text-[#9ca3af] uppercase tracking-wide mb-0.5">Status</p>
-            {levy.isActive ? (
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[rgba(22,163,74,0.1)] text-[#16a34a]">Active</span>
-            ) : (
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#f3f4f6] text-[#6b7280]">Inactive</span>
-            )}
-          </div>
-          <div>
-            <p className="text-[11px] font-medium text-[#9ca3af] uppercase tracking-wide mb-0.5">Created By</p>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[13px] font-semibold text-[#101828]">{levy.createdByName ?? "—"}</span>
+            </span>
+            <span>
+              <span className="font-medium text-[#374151]">Created By:</span>{" "}
+              {levy.createdByName ?? "—"}
               {levy.createdByType && (
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                  levy.createdByType === "Admin"
-                    ? "bg-[rgba(220,38,38,0.1)] text-[#dc2626]"
-                    : "bg-[rgba(13,143,175,0.1)] text-[#0D8FAF]"
-                }`}>
-                  {levy.createdByType}
+                <span
+                  className={`ml-1.5 inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                    levy.createdByType === "Admin"
+                      ? "bg-[rgba(220,38,38,0.1)] text-[#dc2626]"
+                      : "bg-[rgba(13,143,175,0.1)] text-[#0D8FAF]"
+                  }`}
+                >
+                  {levy.createdByType === "Admin" ? "Back Office" : "Manager"}
                 </span>
               )}
-            </div>
-          </div>
-          <div>
-            <p className="text-[11px] font-medium text-[#9ca3af] uppercase tracking-wide mb-0.5">Created</p>
-            <p className="text-[13px] font-semibold text-[#101828]">{formatDateOnly(String(levy.dateCreated))}</p>
-          </div>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5">
-            <p className="text-[12px] font-medium text-[#6b7280] uppercase tracking-wide mb-2">
-              Total Expected
-            </p>
-            <p className="text-[20px] font-bold text-[#101828]">
-              {formatCurrency(summary?.totalExpected ?? 0)}
-            </p>
-            <p className="text-[12px] text-[#9ca3af] mt-1">
-              {summary?.total ?? 0} member{(summary?.total ?? 0) !== 1 ? "s" : ""}
-            </p>
-          </div>
-          <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5">
-            <p className="text-[12px] font-medium text-[#6b7280] uppercase tracking-wide mb-2">
-              Total Collected
-            </p>
-            <p className="text-[20px] font-bold text-[#16a34a]">
-              {formatCurrency(summary?.totalCollected ?? 0)}
-            </p>
-            <p className="text-[12px] text-[#9ca3af] mt-1">
-              {summary?.paid ?? 0} paid
-            </p>
-          </div>
-          <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5">
-            <p className="text-[12px] font-medium text-[#6b7280] uppercase tracking-wide mb-2">
-              Outstanding
-            </p>
-            <p className="text-[20px] font-bold text-[#ca8a04]">
-              {summary?.pending ?? 0}
-            </p>
-            <p className="text-[12px] text-[#9ca3af] mt-1">
-              pending member{(summary?.pending ?? 0) !== 1 ? "s" : ""}
-            </p>
-          </div>
-          <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5">
-            <p className="text-[12px] font-medium text-[#6b7280] uppercase tracking-wide mb-2">
-              Deadline
-            </p>
-            <p className="text-[18px] font-bold text-[#101828]">
-              {formatDateOnly(levy.dueDate)}
-            </p>
-            <p className="text-[12px] text-[#9ca3af] mt-1">
-              {formatCurrency(levy.defaultAmount)} per member
-            </p>
+            </span>
+            <span>
+              <span className="font-medium text-[#374151]">Created:</span>{" "}
+              {levy.dateCreated
+                ? formatDateTime(String(levy.dateCreated))
+                : "—"}
+            </span>
           </div>
         </div>
 
-        {/* Assignments section header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <h2 className="text-[16px] font-semibold text-[#101828]">
-              Member Assignments
-            </h2>
-            <p className="text-[13px] text-[#6b7280]">
-              {assignmentsLoading ? "..." : totalCount}
-            </p>
+        <div className="flex items-center justify-between mt-6 px-8">
+          {/* ── Back link — outside white box ─────────────────────────────── */}
+          <div className="">
+            <Link
+              to="/manager/levies"
+              className="flex items-center gap-1.5 text-[13px] text-[#6b7280] hover:text-[#374151] transition-colors cursor-pointer"
+            >
+              <ChevronLeft size={16} />
+              Back to Levies
+            </Link>
           </div>
+
           {canWrite && (
             <button
               onClick={() => setActiveModal({ type: "assign" })}
@@ -797,131 +792,218 @@ export default function ManagerLevyDetail() {
           )}
         </div>
 
-        {/* Status filter tabs */}
-        <div className="flex bg-[#f3f4f6] rounded-[10px] p-1 gap-1 mb-4 w-fit">
-          {(["All", "Pending", "Paid", "Waived"] as StatusFilter[]).map((f) => (
-            <button
-              key={f}
-              onClick={() => { setStatusFilter(f); setPage(1); }}
-              className={`px-3 py-1.5 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer ${
-                statusFilter === f
-                  ? "bg-white text-[#101828] shadow-sm"
-                  : "text-[#6b7280] hover:text-[#374151]"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
+        {/* ── Content area ─────────────────────────────────────────────── */}
+        <div className="flex-1 p-8 bg-[#fafbfd] overflow-auto">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5">
+              <p className="text-[12px] font-medium text-[#6b7280] uppercase tracking-wide mb-2">
+                Total Expected
+              </p>
+              <p className="text-[20px] font-bold text-[#101828]">
+                {formatCurrency(summary?.totalExpected ?? 0)}
+              </p>
+              <p className="text-[12px] text-[#9ca3af] mt-1">
+                {summary?.total ?? 0} member
+                {(summary?.total ?? 0) !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5">
+              <p className="text-[12px] font-medium text-[#6b7280] uppercase tracking-wide mb-2">
+                Total Collected
+              </p>
+              <p className="text-[20px] font-bold text-[#16a34a]">
+                {formatCurrency(summary?.totalCollected ?? 0)}
+              </p>
+              <p className="text-[12px] text-[#9ca3af] mt-1">
+                {summary?.paid ?? 0} paid
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5">
+              <p className="text-[12px] font-medium text-[#6b7280] uppercase tracking-wide mb-2">
+                Outstanding
+              </p>
+              <p className="text-[20px] font-bold text-[#ca8a04]">
+                {summary?.pending ?? 0}
+              </p>
+              <p className="text-[12px] text-[#9ca3af] mt-1">
+                pending member{(summary?.pending ?? 0) !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5">
+              <p className="text-[12px] font-medium text-[#6b7280] uppercase tracking-wide mb-2">
+                Deadline
+              </p>
+              <p className="text-[18px] font-bold text-[#101828]">
+                {formatDateOnly(levy.dueDate)}
+              </p>
+              <p className="text-[12px] text-[#9ca3af] mt-1">
+                {formatCurrency(levy.defaultAmount)} per member
+              </p>
+            </div>
+          </div>
 
-        {/* Assignments Table */}
-        <div className="bg-white rounded-2xl border border-[#e5e7eb] overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-[#e5e7eb] bg-[#f9fafb]">
-                  {["#", "Member Name", "Amount Expected", "Amount Paid", "Date Paid", "Status", "Actions"].map(
-                    (col) => (
+          {/* Assignments section header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <h2 className="text-[16px] font-semibold text-[#101828]">
+                Member Assignments
+              </h2>
+              <p className="text-[13px] text-[#6b7280]">
+                {assignmentsLoading ? "..." : totalCount}
+              </p>
+            </div>
+          </div>
+
+          {/* Status filter tabs */}
+          <div className="flex bg-[#f3f4f6] rounded-[10px] p-1 gap-1 mb-4 w-fit">
+            {(["All", "Pending", "Paid", "Waived"] as StatusFilter[]).map(
+              (f) => (
+                <button
+                  key={f}
+                  onClick={() => {
+                    setStatusFilter(f);
+                    setPage(1);
+                  }}
+                  className={`px-3 py-1.5 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer ${
+                    statusFilter === f
+                      ? "bg-white text-[#101828] shadow-sm"
+                      : "text-[#6b7280] hover:text-[#374151]"
+                  }`}
+                >
+                  {f}
+                </button>
+              ),
+            )}
+          </div>
+
+          {/* Assignments Table */}
+          <div className="bg-white rounded-2xl border border-[#e5e7eb] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-[#e5e7eb] bg-[#f9fafb]">
+                    {[
+                      "#",
+                      "Member Name",
+                      "Amount Expected",
+                      "Amount Paid",
+                      "Date Paid",
+                      "Status",
+                      "Actions",
+                    ].map((col) => (
                       <th
                         key={col}
                         className="px-5 py-3.5 text-[12px] font-semibold text-[#6b7280] uppercase tracking-wide whitespace-nowrap"
                       >
                         {col}
                       </th>
-                    ),
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {assignmentsLoading ? (
-                  <>{[1, 2, 3, 4, 5].map((i) => <SkeletonRow key={i} cols={7} />)}</>
-                ) : assignments.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="px-5 py-12 text-center text-[14px] text-[#9ca3af]"
-                    >
-                      {statusFilter === "All"
-                        ? "No members have been assigned to this levy yet."
-                        : `No ${statusFilter.toLowerCase()} assignments.`}
-                    </td>
+                    ))}
                   </tr>
-                ) : (
-                  assignments.map((a, idx) => (
-                    <tr
-                      key={a.id}
-                      className="border-b border-[#f3f4f6] hover:bg-[#fafafa] transition-colors"
-                    >
-                      <td className="px-5 py-4 text-[13px] text-[#6b7280]">
-                        {(page - 1) * pageSize + idx + 1}
-                      </td>
-                      <td className="px-5 py-4 text-[14px] font-medium text-[#101828] whitespace-nowrap">
-                        {a.memberFullName}
-                      </td>
-                      <td className="px-5 py-4 text-[13px] text-[#374151]">
-                        {formatCurrency(a.amount)}
-                      </td>
-                      <td className="px-5 py-4 text-[13px] text-[#374151]">
-                        {a.paidAmount != null ? formatCurrency(a.paidAmount) : "—"}
-                      </td>
-                      <td className="px-5 py-4 text-[13px] text-[#374151] whitespace-nowrap">
-                        {a.paidDate ? formatDateTime(a.paidDate) : "—"}
-                      </td>
-                      <td className="px-5 py-4">
-                        <StatusBadge status={a.status} />
-                      </td>
-                      <td className="px-5 py-4">
-                        {canWrite && a.status === "Pending" && (
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() =>
-                                setActiveModal({ type: "record", assignment: a })
-                              }
-                              className="text-[12px] font-medium text-[#0D8FAF] hover:underline cursor-pointer"
-                            >
-                              Record
-                            </button>
-                            <button
-                              onClick={() =>
-                                setActiveModal({ type: "waive", assignment: a })
-                              }
-                              className="text-[12px] font-medium text-[#6b7280] hover:underline cursor-pointer"
-                            >
-                              Waive
-                            </button>
-                          </div>
-                        )}
+                </thead>
+                <tbody>
+                  {assignmentsLoading ? (
+                    <>
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <SkeletonRow key={i} cols={7} />
+                      ))}
+                    </>
+                  ) : assignments.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="px-5 py-12 text-center text-[14px] text-[#9ca3af]"
+                      >
+                        {statusFilter === "All"
+                          ? "No members have been assigned to this levy yet."
+                          : `No ${statusFilter.toLowerCase()} assignments.`}
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    assignments.map((a, idx) => (
+                      <tr
+                        key={a.id}
+                        className="border-b border-[#f3f4f6] hover:bg-[#fafafa] transition-colors"
+                      >
+                        <td className="px-5 py-4 text-[13px] text-[#6b7280]">
+                          {(page - 1) * pageSize + idx + 1}
+                        </td>
+                        <td className="px-5 py-4 text-[14px] font-medium text-[#101828] whitespace-nowrap">
+                          {a.memberFullName}
+                        </td>
+                        <td className="px-5 py-4 text-[13px] text-[#374151]">
+                          {formatCurrency(a.amount)}
+                        </td>
+                        <td className="px-5 py-4 text-[13px] text-[#374151]">
+                          {a.paidAmount != null
+                            ? formatCurrency(a.paidAmount)
+                            : "—"}
+                        </td>
+                        <td className="px-5 py-4 text-[13px] text-[#374151] whitespace-nowrap">
+                          {a.paidDate ? formatDateTime(a.paidDate) : "—"}
+                        </td>
+                        <td className="px-5 py-4">
+                          <StatusBadge status={a.status} />
+                        </td>
+                        <td className="px-5 py-4">
+                          {canWrite && a.status === "Pending" && (
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() =>
+                                  setActiveModal({
+                                    type: "record",
+                                    assignment: a,
+                                  })
+                                }
+                                className="text-[12px] font-medium text-[#0D8FAF] hover:underline cursor-pointer"
+                              >
+                                Record
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setActiveModal({
+                                    type: "waive",
+                                    assignment: a,
+                                  })
+                                }
+                                className="text-[12px] font-medium text-[#6b7280] hover:underline cursor-pointer"
+                              >
+                                Waive
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-4 py-2 rounded-[8px] text-[13px] font-medium border border-[#e5e7eb] text-[#374151] hover:bg-[#f9fafb] transition-colors cursor-pointer disabled:opacity-40"
-            >
-              Previous
-            </button>
-            <p className="text-[13px] text-[#6b7280]">
-              Page {page} of {totalPages}
-            </p>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="px-4 py-2 rounded-[8px] text-[13px] font-medium border border-[#e5e7eb] text-[#374151] hover:bg-[#f9fafb] transition-colors cursor-pointer disabled:opacity-40"
-            >
-              Next
-            </button>
-          </div>
-        )}
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 rounded-[8px] text-[13px] font-medium border border-[#e5e7eb] text-[#374151] hover:bg-[#f9fafb] transition-colors cursor-pointer disabled:opacity-40"
+              >
+                Previous
+              </button>
+              <p className="text-[13px] text-[#6b7280]">
+                Page {page} of {totalPages}
+              </p>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-4 py-2 rounded-[8px] text-[13px] font-medium border border-[#e5e7eb] text-[#374151] hover:bg-[#f9fafb] transition-colors cursor-pointer disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modals */}
